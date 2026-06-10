@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group = 'eello'
+version = '1.0-SNAPSHOT'
+
+dependencies {
+//    implementation 'com.github.eello:elpring-di:main-SNAPSHOT'
+    implementation 'com.github.eello:elpring-di:v1.1.2'
+
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0' // Servlet API (컴파일 시에만 필요, 런타임에는 톰캣이 제공)
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.18' // 내장 톰캣 (직접 서버를 실행하기 위해 필요)
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
