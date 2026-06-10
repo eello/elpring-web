@@ -1,4 +1,4 @@
-package eello.elpring.web.mappingtest;
+package eello.elpring.webtest.mapping;
 
 import eello.elpring.web.core.HandlerExecutionChain;
 import eello.elpring.web.mapping.HandlerMapping;
@@ -76,13 +76,11 @@ public abstract class AbstractHandlerMappingTest {
         HttpServletRequest request = FakeHttpServletRequest.of("GET", "/not-found");
         HandlerExecutionChain chain = handlerMapping.getHandler(request);
 
-        assertNotNull(chain, "HandlerExecutionChain should not be null");
-        assertNull(chain.getHandler(), "HandlerMethod should be null for unmapped paths");
+        assertNull(chain, "HandlerExecutionChain should be null for unmapped paths");
     }
 
     @Test
     void testGetHandler_MultiMapping_Get() throws Exception {
-        // GET /api/v1/users -> should match FakeMultiMappingController.getOrPostUsers
         HttpServletRequest request = FakeHttpServletRequest.of("GET", "/api/v1/users");
         HandlerExecutionChain chain = handlerMapping.getHandler(request);
 
@@ -99,7 +97,6 @@ public abstract class AbstractHandlerMappingTest {
 
     @Test
     void testGetHandler_MultiMapping_Post() throws Exception {
-        // POST /api/v2/members -> should match FakeMultiMappingController.getOrPostUsers
         HttpServletRequest request = FakeHttpServletRequest.of("POST", "/api/v2/members");
         HandlerExecutionChain chain = handlerMapping.getHandler(request);
 

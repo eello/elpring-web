@@ -1,4 +1,4 @@
-package eello.elpring.web.fixtures.duplicate;
+package eello.elpring.webtest.fixtures.mapping;
 
 import eello.elpring.di.annotation.Component;
 import eello.elpring.web.annotation.Controller;
@@ -6,10 +6,10 @@ import eello.elpring.web.annotation.GetMapping;
 
 @Controller
 @Component
-public class FakeDuplicateController2 {
+public class FakeHelloController {
 
-    @GetMapping("/duplicate")
-    public String duplicate() {
-        return "dup2";
+    @GetMapping("/hello")
+    public String hello() {
+        return "hello";
     }
 }

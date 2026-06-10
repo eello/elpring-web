@@ -15,4 +15,20 @@ public class HandlerMethod {
         this.bean = bean;
         this.beanType = beanType;
     }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public String getBeanName() {
+        return beanName;
+    }
+
+    public Object getBean() {
+        return bean;
+    }
+
+    public Class<?> getBeanType() {
+        return beanType;
+    }
 }

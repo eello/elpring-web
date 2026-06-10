@@ -1,4 +1,4 @@
-package eello.elpring.web.fixtures.mapping;
+package eello.elpring.webtest.fixtures.mapping;
 
 import eello.elpring.di.annotation.Component;
 import eello.elpring.web.annotation.GetMapping;

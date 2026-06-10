@@ -1,4 +1,4 @@
-package eello.elpring.web.mappingtest;
+package eello.elpring.webtest.mapping;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Proxy;

@@ -57,7 +57,7 @@ public class RequestMappingHandlerMapping implements HandlerMapping, Application
                     }
                 }
 
-                // RequestKey와 HandlerMethod 매가
+                // RequestKey와 HandlerMethod 매핑
                 HandlerMethod handlerMethod = new HandlerMethod(method, beanName, bean, beanType);
                 for (RequestKey requestKey : requestKeys) {
                     if (mappingRegistry.containsKey(requestKey)) {
@@ -109,6 +109,9 @@ public class RequestMappingHandlerMapping implements HandlerMapping, Application
 
         RequestKey requestKey = new RequestKey(requestPath, requestMethod);
         HandlerMethod handlerMethod = mappingRegistry.get(requestKey);
+        if (handlerMethod == null) {
+            return null;
+        }
 
         return new HandlerExecutionChain(handlerMethod);
     }

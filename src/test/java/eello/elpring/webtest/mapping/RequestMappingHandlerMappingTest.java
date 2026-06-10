@@ -1,4 +1,4 @@
-package eello.elpring.web.mappingtest;
+package eello.elpring.webtest.mapping;
 
 import eello.elpring.di.context.AnnotationConfigApplicationContext;
 import eello.elpring.web.annotation.RequestMethod;
@@ -21,8 +21,8 @@ public class RequestMappingHandlerMappingTest extends AbstractHandlerMappingTest
     @Override
     protected HandlerMapping createHandlerMapping() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-                "eello.elpring.web.fixtures.mapping",
-                "eello.elpring.web.mapping"
+                "eello.elpring.webtest.fixtures.mapping",
+                "eello.elpring.web"
         );
         context.refresh();
         return context.getBean(RequestMappingHandlerMapping.class);
@@ -32,8 +32,8 @@ public class RequestMappingHandlerMappingTest extends AbstractHandlerMappingTest
     void testDuplicateMappingThrowsException() {
         assertThrows(IllegalStateException.class, () -> {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-                    "eello.elpring.web.fixtures.duplicate",
-                    "eello.elpring.web.mapping"
+                    "eello.elpring.webtest.fixtures.duplicate",
+                    "eello.elpring.web"
             );
             context.refresh();
         });
@@ -43,8 +43,7 @@ public class RequestMappingHandlerMappingTest extends AbstractHandlerMappingTest
     void testNonControllerBeanIgnored() {
         HttpServletRequest request = FakeHttpServletRequest.of("GET", "/ignored");
         HandlerExecutionChain chain = handlerMapping.getHandler(request);
-        assertNotNull(chain);
-        assertNull(chain.getHandler(), "Non-controller component mappings should be ignored");
+        assertNull(chain, "Non-controller component mappings should be ignored");
     }
 
     @SuppressWarnings("unchecked")
@@ -56,13 +55,18 @@ public class RequestMappingHandlerMappingTest extends AbstractHandlerMappingTest
 
         assertNotNull(mappingRegistry, "mappingRegistry should not be null");
         
-        // Expected size: 3 (from basic controllers) + 8 (from 2x2x2 FakeMultiMappingController) = 11
-        assertEquals(11, mappingRegistry.size(), "mappingRegistry should contain exactly 11 handlers");
+        // Expected size: 3 (basic) + 8 (multi) + 3 (tomcat test controller endpoints) = 14
+        assertEquals(14, mappingRegistry.size(), "mappingRegistry should contain exactly 14 handlers");
 
         // Verify basic controllers
         assertTrue(mappingRegistry.containsKey(new RequestKey("/hello", RequestMethod.GET)));
         assertTrue(mappingRegistry.containsKey(new RequestKey("/api/users", RequestMethod.POST)));
         assertTrue(mappingRegistry.containsKey(new RequestKey("/api/items", RequestMethod.GET)));
+
+        // Verify tomcat test controller
+        assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat", RequestMethod.GET)));
+        assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat/primitive", RequestMethod.GET)));
+        assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat/dto", RequestMethod.GET)));
 
         // Verify multi-mapping combinations (2 classPaths * 2 methodPaths * 2 methods = 8 combinations)
         assertTrue(mappingRegistry.containsKey(new RequestKey("/api/v1/users", RequestMethod.GET)));
