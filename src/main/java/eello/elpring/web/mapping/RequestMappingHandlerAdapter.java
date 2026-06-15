@@ -20,6 +20,7 @@ public class RequestMappingHandlerAdapter implements HandlerAdapter {
     @Override
     public String handle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler) throws Exception {
         // TODO: RequestParam 적용
+//        request.getQueryString()
 
         // 핸들러 메소드 실행
         Object controller = handler.getBean();
