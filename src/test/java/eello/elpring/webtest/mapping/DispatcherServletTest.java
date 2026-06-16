@@ -17,6 +17,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DispatcherServletTest {
 
+    public void dummy() {}
+
+    private static java.lang.reflect.Method getDummyMethod() {
+        try {
+            return DispatcherServletTest.class.getMethod("dummy");
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static class TestDispatcherServlet extends DispatcherServlet {
         public TestDispatcherServlet(HandlerMapping handlerMapping, HandlerAdapter handlerAdapter) {
             super(handlerMapping, handlerAdapter);
@@ -33,7 +43,7 @@ public class DispatcherServletTest {
         AtomicBoolean mappingCalled = new AtomicBoolean(false);
         AtomicBoolean adapterCalled = new AtomicBoolean(false);
 
-        HandlerMethod dummyHandler = new HandlerMethod(null, "dummy", null, null);
+        HandlerMethod dummyHandler = new HandlerMethod(getDummyMethod(), "dummy", null, null);
         HandlerExecutionChain dummyChain = new HandlerExecutionChain(dummyHandler);
 
         HandlerMapping mockMapping = new HandlerMapping() {
@@ -65,7 +75,7 @@ public class DispatcherServletTest {
 
     @Test
     void testService_ThrowsRuntimeExceptionWhenAdapterFails() {
-        HandlerMethod dummyHandler = new HandlerMethod(null, "dummy", null, null);
+        HandlerMethod dummyHandler = new HandlerMethod(getDummyMethod(), "dummy", null, null);
         HandlerExecutionChain dummyChain = new HandlerExecutionChain(dummyHandler);
 
         HandlerMapping mockMapping = new HandlerMapping() {

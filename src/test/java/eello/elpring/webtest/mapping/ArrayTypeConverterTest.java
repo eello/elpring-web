@@ -2,17 +2,33 @@ package eello.elpring.webtest.mapping;
 
 import eello.elpring.web.exception.MethodArgumentTypeMismatchException;
 import eello.elpring.web.mapping.ArrayTypeConverter;
+import eello.elpring.web.mapping.CustomObjectTypeConverter;
+import eello.elpring.web.mapping.PrimitiveTypeConverter;
+import eello.elpring.web.mapping.ScalarTypeConverterManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ArrayTypeConverterTest {
 
-    private final ArrayTypeConverter converter = new ArrayTypeConverter();
+    private ArrayTypeConverter converter;
+
+    @BeforeEach
+    void setUp() {
+        PrimitiveTypeConverter primitiveConverter = new PrimitiveTypeConverter();
+        CustomObjectTypeConverter customObjectConverter = new CustomObjectTypeConverter();
+        ScalarTypeConverterManager manager = new ScalarTypeConverterManager(
+                List.of(primitiveConverter, customObjectConverter)
+        );
+        converter = new ArrayTypeConverter(manager);
+    }
 
     @Test
-    @DisplayName("배열 타입에 대해 supports가 true를 반환해야 한다.")
+    @DisplayName("배열 타입이면서 요소 타입이 ScalarTypeConverterManager에서 지원될 때 supports가 true를 반환해야 한다.")
     void supports_array_types() {
         assertTrue(converter.supports(int[].class));
         assertTrue(converter.supports(String[].class));
@@ -20,11 +36,12 @@ class ArrayTypeConverterTest {
     }
 
     @Test
-    @DisplayName("배열이 아닌 타입에 대해 supports가 false를 반환해야 한다.")
+    @DisplayName("배열이 아니거나 요소 타입이 지원되지 않을 때 supports가 false를 반환해야 한다.")
     void not_supports_non_array_types() {
         assertFalse(converter.supports(int.class));
         assertFalse(converter.supports(String.class));
         assertFalse(converter.supports(CustomObj.class));
+        assertFalse(converter.supports(NoFactoryObj[].class)); // 요소 타입이 지원되지 않는 클래스 배열
     }
 
     @Test
@@ -65,20 +82,10 @@ class ArrayTypeConverterTest {
     }
 
     @Test
-    @DisplayName("지원하지 않는 타입 변환을 시도할 때 IllegalStateException이 발생해야 한다.")
+    @DisplayName("지원하지 않는 타입 변환을 시도할 때 MethodArgumentTypeMismatchException이 발생해야 한다.")
     void convert_unsupported_type_throws_exception() {
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> 
-                converter.convert(String.class, new String[]{"hello"})
-        );
-        assertTrue(ex.getMessage().contains("Cannot convert array of type"));
-    }
-
-    @Test
-    @DisplayName("String 생성자나 팩토리 메서드가 없는 객체 배열로 변환 시 MethodArgumentTypeMismatchException이 발생해야 한다.")
-    void convert_no_factory_method_throws_exception() {
-        String[] input = {"test"};
         assertThrows(MethodArgumentTypeMismatchException.class, () -> 
-                converter.convert(NoFactoryObj[].class, input)
+                converter.convert(String.class, new String[]{"hello"})
         );
     }
 
@@ -101,7 +108,6 @@ class ArrayTypeConverterTest {
     }
 
     public static class NoFactoryObj {
-        // 단일 String 매개변수 생성자 없음
         public NoFactoryObj(int value) {
         }
     }

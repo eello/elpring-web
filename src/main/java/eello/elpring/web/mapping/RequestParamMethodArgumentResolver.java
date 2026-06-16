@@ -5,18 +5,18 @@ import eello.elpring.web.annotation.RequestParam;
 import eello.elpring.web.core.MethodParameter;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Component
 public class RequestParamMethodArgumentResolver implements ArgumentResolver {
 
-    private final List<TypeConverter> converters;
-    private final Map<Class<?>, TypeConverter> convertCache;
+    /**
+     * TODO: CustomObjectTypeConvert, ListTypeConverter, SetTypeConverter 추가
+     * TODO: ArrayTypeConverter에서 객체 생성하는 부분을 CustomObjectTypeConverter에 옮기고 그걸 활용하도록 수정
+     */
 
-    public RequestParamMethodArgumentResolver(List<TypeConverter> converters) {
-        this.converters = converters;
-        this.convertCache = new ConcurrentHashMap<>();
+    private final RequestParamConversionService requestParamConversionService;
+
+    public RequestParamMethodArgumentResolver(RequestParamConversionService requestParamConversionService) {
+        this.requestParamConversionService = requestParamConversionService;
     }
 
     @Override
@@ -25,21 +25,7 @@ public class RequestParamMethodArgumentResolver implements ArgumentResolver {
             return false;
         }
 
-        Class<?> paramType = parameter.getParameterType();
-        if (convertCache.containsKey(paramType)) {
-            return true;
-        }
-
-        Optional<TypeConverter> matchedConverter =
-                converters.stream().filter(converter -> converter.supports(paramType))
-                .findFirst();
-
-        if (matchedConverter.isPresent()) {
-            convertCache.put(paramType, matchedConverter.get());
-            return true;
-        }
-
-        return false;
+        return requestParamConversionService.supports(parameter.getParameterType());
     }
 
     @Override
@@ -47,7 +33,6 @@ public class RequestParamMethodArgumentResolver implements ArgumentResolver {
         String[] rawValues = request.getParameterValues(name);
         Class<?> paramType = methodParameter.getParameterType();
 
-        TypeConverter typeConverter = convertCache.get(paramType);
-        return typeConverter.convert(paramType, rawValues);
+        return requestParamConversionService.convert(paramType, rawValues);
     }
 }

@@ -1,5 +1,6 @@
 package eello.elpring.webtest.mapping;
 
+import eello.elpring.web.exception.MethodArgumentTypeMismatchException;
 import eello.elpring.web.mapping.PrimitiveTypeConverter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,12 +55,12 @@ class PrimitiveTypeConverterTest {
     }
 
     @Test
-    @DisplayName("지원하지 않는 타입 변환을 시도할 때 IllegalStateException이 발생해야 한다.")
+    @DisplayName("지원하지 않는 타입 변환을 시도할 때 MethodArgumentTypeMismatchException이 발생해야 한다.")
     void convert_unsupported_type_throws_exception() {
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> 
+        MethodArgumentTypeMismatchException ex = assertThrows(MethodArgumentTypeMismatchException.class, () -> 
                 converter.convert(String.class, new String[]{"hello"})
         );
-        assertTrue(ex.getMessage().contains("Cannot convert primitive type java.lang.String to a primitive"));
+        assertTrue(ex.getMessage().contains("Cannot convert to Scalar type"));
     }
 
     @ParameterizedTest

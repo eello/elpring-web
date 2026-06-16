@@ -2,9 +2,7 @@ package eello.elpring.webtest.mapping;
 
 import eello.elpring.web.annotation.RequestParam;
 import eello.elpring.web.core.MethodParameter;
-import eello.elpring.web.mapping.PrimitiveTypeConverter;
-import eello.elpring.web.mapping.RequestParamMethodArgumentResolver;
-import eello.elpring.web.mapping.TypeConverter;
+import eello.elpring.web.mapping.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +19,22 @@ class RequestParamMethodArgumentResolverTest {
 
     @BeforeEach
     void setUp() {
-        TypeConverter primitiveTypeConverter = new PrimitiveTypeConverter();
-        resolver = new RequestParamMethodArgumentResolver(List.of(primitiveTypeConverter));
+        PrimitiveTypeConverter primitiveTypeConverter = new PrimitiveTypeConverter();
+        CustomObjectTypeConverter customObjectTypeConverter = new CustomObjectTypeConverter();
+        
+        ScalarTypeConverterManager scalarManager = new ScalarTypeConverterManager(
+                List.of(primitiveTypeConverter, customObjectTypeConverter)
+        );
+        
+        ArrayTypeConverter arrayTypeConverter = new ArrayTypeConverter(scalarManager);
+        List<CollectionTypeConverter> collectionConverters = List.of(arrayTypeConverter);
+        
+        RequestParamConversionService conversionService = new RequestParamConversionService(
+                scalarManager,
+                collectionConverters
+        );
+        
+        resolver = new RequestParamMethodArgumentResolver(conversionService);
     }
 
     public void sampleMethod(@RequestParam("age") int age, String name) {

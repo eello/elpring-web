@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
-public class PrimitiveTypeConverter implements TypeConverter {
+public class PrimitiveTypeConverter extends ScalarTypeConverter {
 
     public static final Map<Class<?>, Function<String, Object>> converters = new HashMap<>();
 
@@ -39,10 +39,7 @@ public class PrimitiveTypeConverter implements TypeConverter {
     }
 
     @Override
-    public Object convert(Class<?> targetType, String[] rawValues) {
-        if (!supports(targetType)) {
-            throw new IllegalStateException("Cannot convert primitive type " + targetType.getName() + " to a primitive");
-        }
-        return converters.get(targetType).apply(rawValues[0]);
+    protected Object convertSingle(Class<?> targetType, String rawValue) {
+        return converters.get(targetType).apply(rawValue);
     }
 }
