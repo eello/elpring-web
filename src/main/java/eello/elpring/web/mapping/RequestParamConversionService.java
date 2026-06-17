@@ -44,8 +44,12 @@ public class RequestParamConversionService {
     }
 
     public Object convert(Class<?> paramType, String[] rawValues) {
+        return convert(paramType, null, rawValues);
+    }
+
+    public Object convert(Class<?> paramType, Class<?> componentType, String[] rawValues) {
         TypeConverter converter = convertCache.get(paramType);
-        return converter.convert(paramType, rawValues);
+        return converter.convert(paramType, componentType, rawValues);
     }
 
     public TypeConverter getConverter(Class<?> paramType) {

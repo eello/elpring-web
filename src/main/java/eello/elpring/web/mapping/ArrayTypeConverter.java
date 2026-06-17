@@ -7,22 +7,18 @@ import java.lang.reflect.*;
 @Component
 public class ArrayTypeConverter extends CollectionTypeConverter {
 
-    private final ScalarTypeConverterManager scalarConverterManager;
-
     public ArrayTypeConverter(ScalarTypeConverterManager scalarConverterManager) {
-        this.scalarConverterManager = scalarConverterManager;
+        super(scalarConverterManager);
     }
 
     @Override
     public boolean supports(Class<?> targetType) {
-        return targetType.isArray() && scalarConverterManager.supports(targetType.getComponentType());
+        return targetType.isArray();
     }
 
     @Override
-    protected Object convertInternal(Class<?> targetType, String[] rawValues) {
-        Class<?> componentType = targetType.getComponentType();
-        ScalarTypeConverter converter = scalarConverterManager.getConverter(componentType);
-
+    protected Object convertInternal(ScalarTypeConverter converter, Class<?> targetType, Class<?> componentType,
+                                     String[] rawValues) {
         Object array = Array.newInstance(componentType, rawValues.length);
         for (int i = 0; i < rawValues.length; i++) {
             Array.set(array, i, converter.convertSingle(componentType, rawValues[i]));

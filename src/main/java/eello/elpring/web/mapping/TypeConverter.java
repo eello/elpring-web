@@ -9,4 +9,5 @@ public interface TypeConverter {
         throw MethodArgumentTypeMismatchException
      */
     Object convert(Class<?> targetType, String[] rawValues);
+    Object convert(Class<?> targetType, Class<?> componentType, String[] rawValues);
 }

@@ -4,15 +4,33 @@ import eello.elpring.web.exception.MethodArgumentTypeMismatchException;
 
 public abstract class CollectionTypeConverter implements TypeConverter {
 
-    @Override
-    public Object convert(Class<?> targetType, String[] rawValues) {
-        if (!supports(targetType)) {
-            throw new MethodArgumentTypeMismatchException("Cannot convert to Collection/Array type: unsupported " +
-                    "target type [" + targetType.getName() + "]");
-        }
+    protected final ScalarTypeConverterManager scalarConverterManager;
 
-        return convertInternal(targetType, rawValues);
+    public CollectionTypeConverter(ScalarTypeConverterManager scalarConverterManager) {
+        this.scalarConverterManager = scalarConverterManager;
     }
 
-    protected abstract Object convertInternal(Class<?> targetType, String[] rawValues);
+    @Override
+    public Object convert(Class<?> targetType, String[] rawValues) {
+        return convert(targetType, null, rawValues);
+    }
+
+    @Override
+    public Object convert(Class<?> targetType, Class<?> componentType, String[] rawValues) {
+        if (componentType == null) {
+            throw new IllegalArgumentException("Component type must not be null");
+        }
+
+        ScalarTypeConverter converter = scalarConverterManager.getConverter(componentType);
+        if (converter == null) {
+            throw new MethodArgumentTypeMismatchException("Cannot convert " + componentType.getName() + " to type " + targetType.getName());
+        }
+
+        return convertInternal(converter, targetType, componentType, rawValues);
+    }
+
+    protected abstract Object convertInternal(ScalarTypeConverter converter,
+                                              Class<?> targetType,
+                                              Class<?> componentType,
+                                              String[] rawValues);
 }

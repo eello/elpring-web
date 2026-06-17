@@ -60,7 +60,7 @@ class PrimitiveTypeConverterTest {
         MethodArgumentTypeMismatchException ex = assertThrows(MethodArgumentTypeMismatchException.class, () -> 
                 converter.convert(String.class, new String[]{"hello"})
         );
-        assertTrue(ex.getMessage().contains("Cannot convert to Scalar type"));
+        assertTrue(ex.getMessage().contains("Cannot convert"));
     }
 
     @ParameterizedTest

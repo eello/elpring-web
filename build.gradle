@@ -7,7 +7,7 @@ version = '1.0-SNAPSHOT'
 
 dependencies {
 //    implementation 'com.github.eello:elpring-di:main-SNAPSHOT'
-    implementation 'com.github.eello:elpring-di:v1.2.1'
+    implementation 'com.github.eello:elpring-di:v1.2.2'
 
     // Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind
     implementation 'tools.jackson.core:jackson-databind:3.1.3'

@@ -28,7 +28,7 @@ class ArrayTypeConverterTest {
     }
 
     @Test
-    @DisplayName("배열 타입이면서 요소 타입이 ScalarTypeConverterManager에서 지원될 때 supports가 true를 반환해야 한다.")
+    @DisplayName("배열 타입에 대해 supports가 true를 반환해야 한다.")
     void supports_array_types() {
         assertTrue(converter.supports(int[].class));
         assertTrue(converter.supports(String[].class));
@@ -36,19 +36,18 @@ class ArrayTypeConverterTest {
     }
 
     @Test
-    @DisplayName("배열이 아니거나 요소 타입이 지원되지 않을 때 supports가 false를 반환해야 한다.")
+    @DisplayName("배열이 아닌 타입에 대해 supports가 false를 반환해야 한다.")
     void not_supports_non_array_types() {
         assertFalse(converter.supports(int.class));
         assertFalse(converter.supports(String.class));
         assertFalse(converter.supports(CustomObj.class));
-        assertFalse(converter.supports(NoFactoryObj[].class)); // 요소 타입이 지원되지 않는 클래스 배열
     }
 
     @Test
     @DisplayName("문자열 배열을 프리미티브 타입 배열로 정상 변환해야 한다.")
     void convert_string_array_to_primitive_array() {
         String[] input = {"1", "2", "3"};
-        Object result = converter.convert(int[].class, input);
+        Object result = converter.convert(int[].class, int.class, input);
 
         assertInstanceOf(int[].class, result);
         int[] intArray = (int[]) result;
@@ -59,7 +58,7 @@ class ArrayTypeConverterTest {
     @DisplayName("단일 String 생성자를 가진 객체 배열로 정상 변환해야 한다.")
     void convert_string_array_to_custom_object_array_with_constructor() {
         String[] input = {"apple", "banana"};
-        Object result = converter.convert(CustomObj[].class, input);
+        Object result = converter.convert(CustomObj[].class, CustomObj.class, input);
 
         assertInstanceOf(CustomObj[].class, result);
         CustomObj[] customArray = (CustomObj[]) result;
@@ -72,7 +71,7 @@ class ArrayTypeConverterTest {
     @DisplayName("단일 String 정적 팩토리 메서드를 가진 객체 배열로 정상 변환해야 한다.")
     void convert_string_array_to_custom_object_array_with_factory_method() {
         String[] input = {"100", "200"};
-        Object result = converter.convert(FactoryObj[].class, input);
+        Object result = converter.convert(FactoryObj[].class, FactoryObj.class, input);
 
         assertInstanceOf(FactoryObj[].class, result);
         FactoryObj[] factoryArray = (FactoryObj[]) result;
@@ -85,7 +84,7 @@ class ArrayTypeConverterTest {
     @DisplayName("지원하지 않는 타입 변환을 시도할 때 MethodArgumentTypeMismatchException이 발생해야 한다.")
     void convert_unsupported_type_throws_exception() {
         assertThrows(MethodArgumentTypeMismatchException.class, () -> 
-                converter.convert(String.class, new String[]{"hello"})
+                converter.convert(String.class, NoFactoryObj.class, new String[]{"hello"}) // supports 실패 혹은 converter 획득 실패
         );
     }
 

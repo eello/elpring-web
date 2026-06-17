@@ -1,6 +1,7 @@
 package eello.elpring.web.mapping;
 
 import eello.elpring.di.annotation.Component;
+import eello.elpring.web.exception.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +41,11 @@ public class PrimitiveTypeConverter extends ScalarTypeConverter {
 
     @Override
     protected Object convertSingle(Class<?> targetType, String rawValue) {
-        return converters.get(targetType).apply(rawValue);
+        Function<String, Object> converter = converters.get(targetType);
+        if (converter == null) {
+            throw new MethodArgumentTypeMismatchException("Cannot convert " + rawValue + " to type " + targetType.getName());
+        }
+
+        return converter.apply(rawValue);
     }
 }

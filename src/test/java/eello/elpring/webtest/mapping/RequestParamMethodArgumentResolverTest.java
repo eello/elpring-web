@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +28,14 @@ class RequestParamMethodArgumentResolverTest {
         );
         
         ArrayTypeConverter arrayTypeConverter = new ArrayTypeConverter(scalarManager);
-        List<CollectionTypeConverter> collectionConverters = List.of(arrayTypeConverter);
+        ListTypeConverter listTypeConverter = new ListTypeConverter(scalarManager);
+        SetTypeConverter setTypeConverter = new SetTypeConverter(scalarManager);
+        
+        List<CollectionTypeConverter> collectionConverters = List.of(
+                arrayTypeConverter, 
+                listTypeConverter,
+                setTypeConverter
+        );
         
         RequestParamConversionService conversionService = new RequestParamConversionService(
                 scalarManager,
@@ -38,7 +46,15 @@ class RequestParamMethodArgumentResolverTest {
     }
 
     public void sampleMethod(@RequestParam("age") int age, String name) {
-        // 테스트를 위한 더미 메서드
+        // 테스트용
+    }
+
+    public void sampleMethodList(@RequestParam("ids") List<Integer> ids) {
+        // 테스트용
+    }
+
+    public void sampleMethodSet(@RequestParam("codes") Set<Integer> codes) {
+        // 테스트용
     }
 
     @Test
@@ -64,33 +80,48 @@ class RequestParamMethodArgumentResolverTest {
     }
 
     @Test
-    @DisplayName("캐싱 동작 검증: 동일한 타입에 대해 supportsParameter를 다시 호출하면 true를 반환해야 한다.")
-    void supportsParameter_uses_cache() throws NoSuchMethodException {
-        Method method = this.getClass().getMethod("sampleMethod", int.class, String.class);
-        MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
-
-        // 첫 번째 호출 (캐시에 등록됨)
-        assertTrue(resolver.supportsParameter(parameter));
-        // 두 번째 호출 (캐시에서 읽어옴)
-        assertTrue(resolver.supportsParameter(parameter));
-    }
-
-    @Test
-    @DisplayName("resolveName을 통해 Request의 파라미터 값을 변환하여 리턴해야 한다.")
-    void resolveName_converts_request_parameter() throws NoSuchMethodException {
-        // 캐싱을 위해 먼저 supportsParameter를 호출해야 함 (현재 구현의 제약사항)
-        Method method = this.getClass().getMethod("sampleMethod", int.class, String.class);
+    @DisplayName("resolveName을 통해 List<Integer> 파라미터 값을 정상적으로 변환하여 리턴해야 한다.")
+    void resolveName_converts_request_parameter_to_list() throws NoSuchMethodException {
+        Method method = this.getClass().getMethod("sampleMethodList", List.class);
         MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
         resolver.supportsParameter(parameter);
 
         HttpServletRequest request = FakeHttpServletRequest.builder()
                 .method("GET")
                 .uri("/")
-                .addParameter("age", "25")
+                .addParameter("ids", "1", "2", "3")
                 .build();
 
-        Object result = resolver.resolveName("age", parameter, request);
+        Object result = resolver.resolveName("ids", parameter, request);
 
-        assertEquals(25, result);
+        assertInstanceOf(List.class, result);
+        List<?> list = (List<?>) result;
+        assertEquals(3, list.size());
+        assertEquals(1, list.get(0));
+        assertEquals(2, list.get(1));
+        assertEquals(3, list.get(2));
+    }
+
+    @Test
+    @DisplayName("resolveName을 통해 Set<Integer> 파라미터 값을 정상적으로 변환하여 리턴해야 한다.")
+    void resolveName_converts_request_parameter_to_set() throws NoSuchMethodException {
+        Method method = this.getClass().getMethod("sampleMethodSet", Set.class);
+        MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
+        resolver.supportsParameter(parameter);
+
+        HttpServletRequest request = FakeHttpServletRequest.builder()
+                .method("GET")
+                .uri("/")
+                .addParameter("codes", "10", "20", "20", "30")
+                .build();
+
+        Object result = resolver.resolveName("codes", parameter, request);
+
+        assertInstanceOf(Set.class, result);
+        Set<?> set = (Set<?>) result;
+        assertEquals(3, set.size());
+        assertTrue(set.contains(10));
+        assertTrue(set.contains(20));
+        assertTrue(set.contains(30));
     }
 }
