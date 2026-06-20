@@ -23,29 +23,24 @@ class RequestParamMethodArgumentResolverTest {
         PrimitiveTypeConverter primitiveTypeConverter = new PrimitiveTypeConverter();
         CustomObjectTypeConverter customObjectTypeConverter = new CustomObjectTypeConverter();
         
-        ScalarTypeConverterManager scalarManager = new ScalarTypeConverterManager(
-                List.of(primitiveTypeConverter, customObjectTypeConverter)
-        );
+        ScalarTypeConverterManager scalarManager = new ScalarTypeConverterManager();
+        scalarManager.addTypeConverter(primitiveTypeConverter);
+        scalarManager.addTypeConverter(customObjectTypeConverter);
         
-        ArrayTypeConverter arrayTypeConverter = new ArrayTypeConverter(scalarManager);
-        ListTypeConverter listTypeConverter = new ListTypeConverter(scalarManager);
-        SetTypeConverter setTypeConverter = new SetTypeConverter(scalarManager);
+        CollectionTypeConverterManager collectionManager = new CollectionTypeConverterManager();
+        collectionManager.addTypeConverter(new ArrayTypeConverter(scalarManager));
+        collectionManager.addTypeConverter(new ListTypeConverter(scalarManager));
+        collectionManager.addTypeConverter(new SetTypeConverter(scalarManager));
         
-        List<CollectionTypeConverter> collectionConverters = List.of(
-                arrayTypeConverter, 
-                listTypeConverter,
-                setTypeConverter
-        );
+        java.util.List<TypeConverterManager<? extends TypeConverter>> managers = new java.util.ArrayList<>();
+        managers.add(scalarManager);
+        managers.add(collectionManager);
         
-        RequestParamConversionService conversionService = new RequestParamConversionService(
-                scalarManager,
-                collectionConverters
-        );
-        
+        RequestParamConversionService conversionService = new RequestParamConversionService(managers);
         resolver = new RequestParamMethodArgumentResolver(conversionService);
     }
 
-    public void sampleMethod(@RequestParam("age") int age, String name) {
+    public void sampleMethod(@RequestParam("age") int age, HttpServletRequest unsupport) {
         // 테스트용
     }
 
@@ -60,7 +55,7 @@ class RequestParamMethodArgumentResolverTest {
     @Test
     @DisplayName("@RequestParam 어노테이션이 선언된 파라미터는 supportsParameter가 true를 반환해야 한다.")
     void supportsParameter_with_annotation() throws NoSuchMethodException {
-        Method method = this.getClass().getMethod("sampleMethod", int.class, String.class);
+        Method method = this.getClass().getMethod("sampleMethod", int.class, HttpServletRequest.class);
         MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
 
         boolean result = resolver.supportsParameter(parameter);
@@ -69,9 +64,9 @@ class RequestParamMethodArgumentResolverTest {
     }
 
     @Test
-    @DisplayName("@RequestParam 어노테이션이 없는 파라미터는 supportsParameter가 false를 반환해야 한다.")
+    @DisplayName("리졸버가 지원하지 않는 파라미터 타입인 경우 supportsParameter가 false를 반환해야 한다.")
     void not_supportsParameter_without_annotation() throws NoSuchMethodException {
-        Method method = this.getClass().getMethod("sampleMethod", int.class, String.class);
+        Method method = this.getClass().getMethod("sampleMethod", int.class, HttpServletRequest.class);
         MethodParameter parameter = MethodParameter.of(method, method.getParameters()[1], 1);
 
         boolean result = resolver.supportsParameter(parameter);
@@ -81,7 +76,7 @@ class RequestParamMethodArgumentResolverTest {
 
     @Test
     @DisplayName("resolveName을 통해 List<Integer> 파라미터 값을 정상적으로 변환하여 리턴해야 한다.")
-    void resolveName_converts_request_parameter_to_list() throws NoSuchMethodException {
+    void resolveArgument_converts_request_parameter_to_list() throws NoSuchMethodException {
         Method method = this.getClass().getMethod("sampleMethodList", List.class);
         MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
         resolver.supportsParameter(parameter);
@@ -92,7 +87,7 @@ class RequestParamMethodArgumentResolverTest {
                 .addParameter("ids", "1", "2", "3")
                 .build();
 
-        Object result = resolver.resolveName("ids", parameter, request);
+        Object result = resolver.resolveArgument(parameter, request, null);
 
         assertInstanceOf(List.class, result);
         List<?> list = (List<?>) result;
@@ -104,7 +99,7 @@ class RequestParamMethodArgumentResolverTest {
 
     @Test
     @DisplayName("resolveName을 통해 Set<Integer> 파라미터 값을 정상적으로 변환하여 리턴해야 한다.")
-    void resolveName_converts_request_parameter_to_set() throws NoSuchMethodException {
+    void resolveArgument_converts_request_parameter_to_set() throws NoSuchMethodException {
         Method method = this.getClass().getMethod("sampleMethodSet", Set.class);
         MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
         resolver.supportsParameter(parameter);
@@ -115,7 +110,7 @@ class RequestParamMethodArgumentResolverTest {
                 .addParameter("codes", "10", "20", "20", "30")
                 .build();
 
-        Object result = resolver.resolveName("codes", parameter, request);
+        Object result = resolver.resolveArgument(parameter, request, null);
 
         assertInstanceOf(Set.class, result);
         Set<?> set = (Set<?>) result;

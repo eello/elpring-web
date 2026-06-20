@@ -50,12 +50,11 @@ public class MethodParameter {
         return parameterAnnotations;
     }
 
+    public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
+        return parameter.getAnnotation(annotationClass);
+    }
+
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
-        for (Annotation parameterAnnotation : parameterAnnotations) {
-            if (parameter.isAnnotationPresent(annotationClass)) {
-                return true;
-            }
-        }
-        return false;
+        return parameter.isAnnotationPresent(annotationClass);
     }
 }

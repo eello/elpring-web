@@ -1,13 +1,11 @@
 package eello.elpring.web.mapping;
 
-import eello.elpring.di.annotation.Component;
 import eello.elpring.web.exception.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-@Component
 public class PrimitiveTypeConverter extends ScalarTypeConverter {
 
     public static final Map<Class<?>, Function<String, Object>> converters = new HashMap<>();

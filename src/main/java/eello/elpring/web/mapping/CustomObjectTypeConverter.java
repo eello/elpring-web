@@ -1,6 +1,5 @@
 package eello.elpring.web.mapping;
 
-import eello.elpring.di.annotation.Component;
 import eello.elpring.web.exception.MethodArgumentTypeMismatchException;
 
 import java.lang.reflect.*;
@@ -8,7 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
 public class CustomObjectTypeConverter extends ScalarTypeConverter {
 
     private final Map<Class<?>, Executable> instanceFactory = new HashMap<>();
@@ -25,7 +23,7 @@ public class CustomObjectTypeConverter extends ScalarTypeConverter {
             return false;
         }
 
-        return getInstanceFactory(targetType) != null;
+        return true;
     }
 
     @Override

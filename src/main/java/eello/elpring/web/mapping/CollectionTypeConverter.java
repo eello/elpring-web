@@ -21,7 +21,7 @@ public abstract class CollectionTypeConverter implements TypeConverter {
             throw new IllegalArgumentException("Component type must not be null");
         }
 
-        ScalarTypeConverter converter = scalarConverterManager.getConverter(componentType);
+        ScalarTypeConverter converter = (ScalarTypeConverter) scalarConverterManager.getTypeConverter(componentType);
         if (converter == null) {
             throw new MethodArgumentTypeMismatchException("Cannot convert " + componentType.getName() + " to type " + targetType.getName());
         }

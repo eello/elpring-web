@@ -41,4 +41,8 @@ public class HandlerMethod {
     public Class<?> getBeanType() {
         return beanType;
     }
+
+    public MethodParameter[] getParameters() {
+        return parameters;
+    }
 }

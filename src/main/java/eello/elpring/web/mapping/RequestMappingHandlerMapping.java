@@ -1,6 +1,5 @@
 package eello.elpring.web.mapping;
 
-import eello.elpring.di.annotation.Component;
 import eello.elpring.di.context.ApplicationContext;
 import eello.elpring.di.context.ApplicationContextAware;
 import eello.elpring.di.exception.BeansException;
@@ -9,12 +8,14 @@ import eello.elpring.web.core.HandlerExecutionChain;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /*
     Http Method와 URL을 기준으로 실행될 Handler를 찾아서 실행되어야할 Interceptor + Handler 를 묶은 HandlerExecutionChain을 반환
  */
-@Component
 public class RequestMappingHandlerMapping implements HandlerMapping, ApplicationContextAware {
 
     private ApplicationContext ctx;

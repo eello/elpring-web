@@ -1,6 +1,5 @@
 package eello.elpring.web;
 
-import eello.elpring.di.annotation.Component;
 import eello.elpring.di.context.ApplicationContext;
 import eello.elpring.di.context.ApplicationContextAware;
 import eello.elpring.di.exception.BeansException;
@@ -15,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@Component
 public class DispatcherServlet extends HttpServlet implements ApplicationContextAware {
 
     private final HandlerMapping handlerMapping; // RequestMappingHandlerMapping

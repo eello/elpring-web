@@ -30,6 +30,7 @@ public class DispatcherServletIntegrationTest {
         // 1. DI 컨테이너 기동
         context = new AnnotationConfigApplicationContext(
                 "eello.elpring.webtest.fixtures.mapping",
+                "eello.elpring.webtest.fixtures.requestparam",
                 "eello.elpring.web"
         );
         context.refresh();
@@ -161,6 +162,51 @@ public class DispatcherServletIntegrationTest {
         assertEquals(200, response.statusCode());
         assertTrue(response.headers().firstValue("Content-Type").isPresent());
         assertTrue(response.headers().firstValue("Content-Type").get().startsWith("application/json"));
-        assertEquals("{\"age\":5,\"name\":\"elpring\"}", response.body(), "Response body should be serialized DTO json");
+        assertEquals("{\"name\":\"elpring\",\"age\":5}", response.body(), "Response body should be serialized DTO json");
+    }
+
+    @Test
+    void testEmbeddedTomcatRequestParamBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-requestparam?name=elpring&age=10"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertEquals("{\"name\":\"elpring\",\"age\":10}", response.body(), "Response body should be bound and serialized correctly");
+    }
+
+    @Test
+    void testEmbeddedTomcatRequestParamCustomNameBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-requestparam/custom-name?user_name=elpring&user_age=25"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertEquals("{\"name\":\"elpring\",\"age\":25}", response.body(), "Response body should be bound via custom names");
+    }
+
+    @Test
+    void testEmbeddedTomcatRequestParamListAndArrayBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-requestparam/list?tags=spring&tags=boot&scores=90&scores=100"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertEquals("{\"tags\":[\"spring\",\"boot\"],\"scores\":[90,100]}", response.body(), "Response body should bind list and array values");
     }
 }

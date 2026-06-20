@@ -22,9 +22,9 @@ class SetTypeConverterTest {
     void setUp() {
         PrimitiveTypeConverter primitiveConverter = new PrimitiveTypeConverter();
         CustomObjectTypeConverter customObjectConverter = new CustomObjectTypeConverter();
-        ScalarTypeConverterManager manager = new ScalarTypeConverterManager(
-                List.of(primitiveConverter, customObjectConverter)
-        );
+        ScalarTypeConverterManager manager = new ScalarTypeConverterManager();
+        manager.addTypeConverter(primitiveConverter);
+        manager.addTypeConverter(customObjectConverter);
         converter = new SetTypeConverter(manager);
     }
 

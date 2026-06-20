@@ -1,10 +1,7 @@
 package eello.elpring.web.mapping;
 
-import eello.elpring.di.annotation.Component;
+import java.lang.reflect.Array;
 
-import java.lang.reflect.*;
-
-@Component
 public class ArrayTypeConverter extends CollectionTypeConverter {
 
     public ArrayTypeConverter(ScalarTypeConverterManager scalarConverterManager) {

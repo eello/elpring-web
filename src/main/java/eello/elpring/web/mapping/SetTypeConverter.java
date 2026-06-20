@@ -1,11 +1,8 @@
 package eello.elpring.web.mapping;
 
-import eello.elpring.di.annotation.Component;
-
 import java.util.HashSet;
 import java.util.Set;
 
-@Component
 public class SetTypeConverter extends CollectionTypeConverter {
 
     public SetTypeConverter(ScalarTypeConverterManager scalarConverterManager) {

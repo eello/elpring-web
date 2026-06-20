@@ -1,23 +1,16 @@
 package eello.elpring.web.mapping;
 
-import eello.elpring.di.annotation.Component;
-
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
 public class RequestParamConversionService {
 
-    private final ScalarTypeConverterManager scalarConverterManager;
-    private final List<CollectionTypeConverter> collectionConverters;
+    private final List<TypeConverterManager<? extends TypeConverter>> typeConverterManagers;
     private final Map<Class<?>, TypeConverter> convertCache = new ConcurrentHashMap<>();
 
-    public RequestParamConversionService(ScalarTypeConverterManager scalarConverterManager,
-                                         List<CollectionTypeConverter> collectionConverters) {
-        this.scalarConverterManager = scalarConverterManager;
-        this.collectionConverters = collectionConverters;
+    public RequestParamConversionService(List<TypeConverterManager<? extends TypeConverter>> typeConverterManagers) {
+        this.typeConverterManagers = typeConverterManagers;
     }
 
     public boolean supports(Class<?> paramType) {
@@ -25,22 +18,7 @@ public class RequestParamConversionService {
             return true;
         }
 
-        if (scalarConverterManager.supports(paramType)) {
-            ScalarTypeConverter converter = scalarConverterManager.getConverter(paramType);
-            convertCache.put(paramType, converter);
-            return true;
-        }
-
-        Optional<CollectionTypeConverter> matchedCollectionConverter =
-                collectionConverters.stream().filter(converter -> converter.supports(paramType))
-                        .findFirst();
-
-        if (matchedCollectionConverter.isPresent()) {
-            convertCache.put(paramType, matchedCollectionConverter.get());
-            return true;
-        }
-
-        return false;
+        return getConverter(paramType) != null;
     }
 
     public Object convert(Class<?> paramType, String[] rawValues) {
@@ -48,15 +26,20 @@ public class RequestParamConversionService {
     }
 
     public Object convert(Class<?> paramType, Class<?> componentType, String[] rawValues) {
-        TypeConverter converter = convertCache.get(paramType);
+        TypeConverter converter = getConverter(paramType);
         return converter.convert(paramType, componentType, rawValues);
     }
 
     public TypeConverter getConverter(Class<?> paramType) {
-        if (!supports(paramType)) {
-            return null;
-        }
+        return convertCache.computeIfAbsent(paramType, this::findConverter);
+    }
 
-        return convertCache.get(paramType);
+    private TypeConverter findConverter(Class<?> paramType) {
+        TypeConverterManager<? extends TypeConverter> typeConverterManager = typeConverterManagers.stream()
+                .filter(manager -> manager.supports(paramType))
+                .findFirst()
+                .orElse(null);
+
+        return typeConverterManager != null ? typeConverterManager.getTypeConverter(paramType) : null;
     }
 }
