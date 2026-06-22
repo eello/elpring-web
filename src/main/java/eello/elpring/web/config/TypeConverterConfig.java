@@ -8,7 +8,7 @@ import eello.elpring.web.bind.convert.ScalarTypeConverterManager;
 import eello.elpring.web.bind.convert.SetTypeConverter;
 import eello.elpring.web.bind.convert.TypeConverter;
 import eello.elpring.web.bind.convert.TypeConverterManager;
-import eello.elpring.web.bind.support.RequestParamConversionService;
+import eello.elpring.web.bind.support.TypeConversionService;
 
 import eello.elpring.di.annotation.Bean;
 import eello.elpring.di.annotation.Configuration;
@@ -37,12 +37,12 @@ public class TypeConverterConfig {
     }
 
     @Bean
-    public RequestParamConversionService requestParamConversionService(
+    public TypeConversionService requestParamConversionService(
             ScalarTypeConverterManager scalarTypeConverterManager,
             CollectionTypeConverterManager collectionTypeConverterManager) {
         List<TypeConverterManager<? extends TypeConverter>> managers = new ArrayList<>();
         managers.add(scalarTypeConverterManager);
         managers.add(collectionTypeConverterManager);
-        return new RequestParamConversionService(managers);
+        return new TypeConversionService(managers);
     }
 }

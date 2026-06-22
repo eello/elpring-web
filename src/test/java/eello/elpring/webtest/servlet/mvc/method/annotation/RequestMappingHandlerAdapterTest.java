@@ -9,16 +9,13 @@ import eello.elpring.web.bind.convert.ScalarTypeConverterManager;
 import eello.elpring.web.bind.convert.SetTypeConverter;
 import eello.elpring.web.bind.convert.TypeConverter;
 import eello.elpring.web.bind.convert.TypeConverterManager;
-import eello.elpring.web.bind.support.RequestParamConversionService;
+import eello.elpring.web.bind.support.TypeConversionService;
 import eello.elpring.web.method.HandlerMethod;
 import eello.elpring.web.method.annotation.RequestParamMethodArgumentResolver;
 import eello.elpring.web.method.support.HandlerMethodArgumentResolverComposite;
-import eello.elpring.web.servlet.HandlerAdapter;
 import eello.elpring.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 import eello.elpring.web.bind.annotation.RequestParam;
-import eello.elpring.web.method.MethodParameter;
-import eello.elpring.web.util.ObjectMapperFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +23,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,7 +50,7 @@ class RequestMappingHandlerAdapterTest {
         managers.add(scalarManager);
         managers.add(collectionManager);
         
-        RequestParamConversionService conversionService = new RequestParamConversionService(managers);
+        TypeConversionService conversionService = new TypeConversionService(managers);
         RequestParamMethodArgumentResolver resolver = new RequestParamMethodArgumentResolver(conversionService);
         
         HandlerMethodArgumentResolverComposite resolverComposite = new HandlerMethodArgumentResolverComposite();

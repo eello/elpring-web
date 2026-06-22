@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RequestParamConversionService {
+public class TypeConversionService {
 
     private final List<TypeConverterManager<? extends TypeConverter>> typeConverterManagers;
     private final Map<Class<?>, TypeConverter> convertCache = new ConcurrentHashMap<>();
 
-    public RequestParamConversionService(List<TypeConverterManager<? extends TypeConverter>> typeConverterManagers) {
+    public TypeConversionService(List<TypeConverterManager<? extends TypeConverter>> typeConverterManagers) {
         this.typeConverterManagers = typeConverterManagers;
     }
 

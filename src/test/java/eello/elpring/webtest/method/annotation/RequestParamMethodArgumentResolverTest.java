@@ -9,7 +9,7 @@ import eello.elpring.web.bind.convert.ScalarTypeConverterManager;
 import eello.elpring.web.bind.convert.SetTypeConverter;
 import eello.elpring.web.bind.convert.TypeConverter;
 import eello.elpring.web.bind.convert.TypeConverterManager;
-import eello.elpring.web.bind.support.RequestParamConversionService;
+import eello.elpring.web.bind.support.TypeConversionService;
 import eello.elpring.web.method.annotation.RequestParamMethodArgumentResolver;
 
 import eello.elpring.web.bind.annotation.RequestParam;
@@ -47,7 +47,7 @@ class RequestParamMethodArgumentResolverTest {
         managers.add(scalarManager);
         managers.add(collectionManager);
         
-        RequestParamConversionService conversionService = new RequestParamConversionService(managers);
+        TypeConversionService conversionService = new TypeConversionService(managers);
         resolver = new RequestParamMethodArgumentResolver(conversionService);
     }
 

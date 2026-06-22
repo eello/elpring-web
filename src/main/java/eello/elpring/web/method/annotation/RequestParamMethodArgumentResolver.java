@@ -1,5 +1,6 @@
 package eello.elpring.web.method.annotation;
-import eello.elpring.web.bind.support.RequestParamConversionService;
+import eello.elpring.web.bind.support.TypeConversionService;
+import eello.elpring.web.inbox.ClassUtils;
 import eello.elpring.web.method.support.HandlerMethodArgumentResolver;
 
 import eello.elpring.di.util.GenericTypeResolver;
@@ -12,10 +13,14 @@ import java.util.Collection;
 
 public class RequestParamMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private final RequestParamConversionService requestParamConversionService;
+    /*
+        @RequestParam이 적용됐거나, 적용되지 않은 기본형 타입(Primitive, Enum, String 등)에 대해 처리를 담
+     */
 
-    public RequestParamMethodArgumentResolver(RequestParamConversionService requestParamConversionService) {
-        this.requestParamConversionService = requestParamConversionService;
+    private final TypeConversionService typeConversionService;
+
+    public RequestParamMethodArgumentResolver(TypeConversionService typeConversionService) {
+        this.typeConversionService = typeConversionService;
     }
 
     @Override
@@ -24,7 +29,7 @@ public class RequestParamMethodArgumentResolver implements HandlerMethodArgument
             return true;
         }
 
-        return requestParamConversionService.supports(parameter.getParameterType());
+        return ClassUtils.isSimpleType(parameter.getParameterType());
     }
 
     @Override
@@ -42,7 +47,7 @@ public class RequestParamMethodArgumentResolver implements HandlerMethodArgument
             componentType = GenericTypeResolver.getGenericComponentType(methodParameter.getParameter());
         }
 
-        return requestParamConversionService.convert(paramType, componentType, rawValues);
+        return typeConversionService.convert(paramType, componentType, rawValues);
     }
 
     private String resolveName(MethodParameter methodParameter) {

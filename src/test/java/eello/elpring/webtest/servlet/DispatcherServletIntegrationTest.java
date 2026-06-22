@@ -32,6 +32,7 @@ public class DispatcherServletIntegrationTest {
         context = new AnnotationConfigApplicationContext(
                 "eello.elpring.webtest.fixtures.mapping",
                 "eello.elpring.webtest.fixtures.requestparam",
+                "eello.elpring.webtest.fixtures.modelattribute",
                 "eello.elpring.web"
         );
         context.refresh();
@@ -209,5 +210,71 @@ public class DispatcherServletIntegrationTest {
 
         assertEquals(200, response.statusCode());
         assertEquals("{\"tags\":[\"spring\",\"boot\"],\"scores\":[90,100]}", response.body(), "Response body should bind list and array values");
+    }
+
+    @Test
+    void testEmbeddedTomcatModelAttributeBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-modelattribute?name=kim&age=20"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        String body = response.body();
+        assertTrue(body.contains("\"name\":\"kim\"") && body.contains("\"age\":20"), 
+                "Response body should be bound and serialized correctly, actual: " + body);
+    }
+
+    @Test
+    void testEmbeddedTomcatModelAttributeNoAnnotationBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-modelattribute/no-annotation?name=park&age=33"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        String body = response.body();
+        assertTrue(body.contains("\"name\":\"park\"") && body.contains("\"age\":33"), 
+                "Response body should be bound without @ModelAttribute, actual: " + body);
+    }
+
+    @Test
+    void testEmbeddedTomcatModelAttributePartialBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-modelattribute?name=choi"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        String body = response.body();
+        assertTrue(body.contains("\"name\":\"choi\"") && body.contains("\"age\":0"), 
+                "Missing request param 'age' should fall back to default (0), actual: " + body);
+    }
+
+    @Test
+    void testEmbeddedTomcatModelAttributeUnsupportedException() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-modelattribute/unsupported?runnable=dummy"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // WAS 수준에서 발생한 rethrow된 IllegalStateException은 500 에러를 유발해야 함.
+        assertEquals(500, response.statusCode());
     }
 }
