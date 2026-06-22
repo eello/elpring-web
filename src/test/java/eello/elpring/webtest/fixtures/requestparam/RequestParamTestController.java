@@ -1,9 +1,9 @@
 package eello.elpring.webtest.fixtures.requestparam;
 
 import eello.elpring.di.annotation.Component;
-import eello.elpring.web.annotation.Controller;
-import eello.elpring.web.annotation.GetMapping;
-import eello.elpring.web.annotation.RequestParam;
+import eello.elpring.web.bind.annotation.Controller;
+import eello.elpring.web.bind.annotation.GetMapping;
+import eello.elpring.web.bind.annotation.RequestParam;
 
 @Controller
 @Component

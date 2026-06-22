@@ -1,9 +1,9 @@
 package eello.elpring.webtest.fixtures.mapping;
 
 import eello.elpring.di.annotation.Component;
-import eello.elpring.web.annotation.Controller;
-import eello.elpring.web.annotation.RequestMapping;
-import eello.elpring.web.annotation.RequestMethod;
+import eello.elpring.web.bind.annotation.Controller;
+import eello.elpring.web.bind.annotation.RequestMapping;
+import eello.elpring.web.bind.annotation.RequestMethod;
 
 @Controller
 @Component
