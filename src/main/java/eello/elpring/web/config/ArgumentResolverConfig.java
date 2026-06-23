@@ -1,5 +1,6 @@
 package eello.elpring.web.config;
 import eello.elpring.web.bind.support.TypeConversionService;
+import eello.elpring.web.method.annotation.PathVariableMethodArgumentResolver;
 import eello.elpring.web.method.annotation.ModelAttributeMethodArgumentResolver;
 import eello.elpring.web.method.annotation.RequestParamMethodArgumentResolver;
 import eello.elpring.web.method.annotation.ServletRequestMethodArgumentResolver;
@@ -19,6 +20,7 @@ public class ArgumentResolverConfig {
         HandlerMethodArgumentResolverComposite resolverComposite = new HandlerMethodArgumentResolverComposite();
         resolverComposite.addArgumentResolver(new ServletRequestMethodArgumentResolver());
         resolverComposite.addArgumentResolver(new ServletResponseMethodArgumentResolver());
+        resolverComposite.addArgumentResolver(new PathVariableMethodArgumentResolver(typeConversionService));
         resolverComposite.addArgumentResolver(new RequestParamMethodArgumentResolver(typeConversionService));
         resolverComposite.addArgumentResolver(new ModelAttributeMethodArgumentResolver(typeConversionService));
         return resolverComposite;

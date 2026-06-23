@@ -14,11 +14,11 @@ public class FakeHttpServletRequest {
     public static HttpServletRequest of(String method, String uri) {
         return builder().method(method).uri(uri).build();
     }
-
     public static class Builder {
         private String method = "GET";
         private String uri = "/";
         private final Map<String, String[]> parameters = new HashMap<>();
+        private final Map<String, Object> attributes = new HashMap<>();
 
         public Builder method(String method) {
             this.method = method;
@@ -35,6 +35,11 @@ public class FakeHttpServletRequest {
             return this;
         }
 
+        public Builder addAttribute(String name, Object value) {
+            this.attributes.put(name, value);
+            return this;
+        }
+
         public HttpServletRequest build() {
             return (HttpServletRequest) Proxy.newProxyInstance(
                     HttpServletRequest.class.getClassLoader(),
@@ -48,6 +53,13 @@ public class FakeHttpServletRequest {
                         }
                         if (proxyMethod.getName().equals("getParameterValues") && args != null && args.length == 1) {
                             return parameters.get((String) args[0]);
+                        }
+                        if (proxyMethod.getName().equals("setAttribute") && args != null && args.length == 2) {
+                            attributes.put((String) args[0], args[1]);
+                            return null;
+                        }
+                        if (proxyMethod.getName().equals("getAttribute") && args != null && args.length == 1) {
+                            return attributes.get((String) args[0]);
                         }
                         return null;
                     }

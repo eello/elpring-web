@@ -35,7 +35,7 @@ public class RequestParamMethodArgumentResolver implements HandlerMethodArgument
     @Override
     public Object resolveArgument(MethodParameter methodParameter, HttpServletRequest request,
                                   HttpServletResponse response) {
-        String paramName = resolveName(methodParameter);
+        String paramName = resolveAnnotatedParameterName(methodParameter, RequestParam.class, RequestParam::value);
         String[] rawValues = request.getParameterValues(paramName);
         Class<?> paramType = methodParameter.getParameterType();
 
@@ -48,24 +48,5 @@ public class RequestParamMethodArgumentResolver implements HandlerMethodArgument
         }
 
         return typeConversionService.convert(paramType, componentType, rawValues);
-    }
-
-    private String resolveName(MethodParameter methodParameter) {
-        String paramName = methodParameter.getParameterName();
-
-        RequestParam requestParam = methodParameter.getAnnotation(RequestParam.class);
-        if (requestParam != null && !requestParam.value().isBlank()) {
-            paramName = requestParam.value();
-        }
-
-        if (paramName == null || paramName.startsWith("arg")) {
-            throw new IllegalArgumentException(
-                    "Name for argument of type [" + methodParameter.getParameterType().getName() +
-                            "] not specified, and parameter name information not available via reflection. " +
-                            "이름을 알 수 없으니 컴파일 시 -parameters 옵션을 켜거나 @RequestParam에 이름을 명시해주세요."
-            );
-        }
-
-        return paramName;
     }
 }

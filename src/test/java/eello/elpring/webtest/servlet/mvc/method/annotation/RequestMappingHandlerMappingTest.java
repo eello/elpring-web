@@ -14,6 +14,9 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.List;
+import eello.elpring.web.servlet.mvc.method.annotation.PatternRequestMapping;
+import eello.elpring.web.method.annotation.PathVariableMethodArgumentResolver;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -50,7 +53,7 @@ public class RequestMappingHandlerMappingTest extends AbstractHandlerMappingTest
     @SuppressWarnings("unchecked")
     @Test
     void testMappingRegistryContainsExactlyAllExpectedHandlers() throws Exception {
-        Field field = RequestMappingHandlerMapping.class.getDeclaredField("mappingRegistry");
+        Field field = RequestMappingHandlerMapping.class.getDeclaredField("staticHandlerRegistry");
         field.setAccessible(true);
         Map<RequestKey, HandlerMethod> mappingRegistry = (Map<RequestKey, HandlerMethod>) field.get(handlerMapping);
 
@@ -115,5 +118,43 @@ public class RequestMappingHandlerMappingTest extends AbstractHandlerMappingTest
         
         // 9. ClassPath with trailing slash, methodPath is single slash
         assertEquals("/api", method.invoke(handlerMapping, "/api/", "/"), "Classpath with slash and empty method path should resolve to /api");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testDynamicMappingRegistryContainsExpectedHandlers() throws Exception {
+        Field field = RequestMappingHandlerMapping.class.getDeclaredField("patternHandlerRegistry");
+        field.setAccessible(true);
+        List<PatternRequestMapping> patternHandlerRegistry = (List<PatternRequestMapping>) field.get(handlerMapping);
+
+        assertNotNull(patternHandlerRegistry, "patternHandlerRegistry should not be null");
+        
+        // TomcatTestController의 testPathVariable 1개만 매핑되어야 함
+        assertEquals(1, patternHandlerRegistry.size(), "patternHandlerRegistry should contain exactly 1 handler");
+
+        PatternRequestMapping route = patternHandlerRegistry.get(0);
+        assertEquals(RequestMethod.GET, route.getMethod());
+        assertEquals("^/test-tomcat/pathvariable/([^/]+)/orders/([^/]+)$", route.getPattern().pattern());
+        assertTrue(route.isMatch("/test-tomcat/pathvariable/123/orders/abc", RequestMethod.GET));
+        assertEquals(List.of("id", "orderId"), route.getPathVars());
+    }
+
+    @Test
+    void testGetHandlerWithPathVariable() {
+        HttpServletRequest request = FakeHttpServletRequest.builder()
+                .method("GET")
+                .uri("/test-tomcat/pathvariable/100/orders/ord-50")
+                .build();
+
+        HandlerExecutionChain chain = handlerMapping.getHandler(request);
+        assertNotNull(chain, "Handler chain should be resolved for dynamic path variable URL");
+        assertNotNull(chain.getHandler(), "Handler should not be null");
+
+        // Request attribute에 PATH_VARIABLES가 세팅되었는지 확인
+        @SuppressWarnings("unchecked")
+        Map<String, String> pathVars = (Map<String, String>) request.getAttribute(PathVariableMethodArgumentResolver.PATH_VARIABLE_ATTRIBUTE_KEY);
+        assertNotNull(pathVars);
+        assertEquals("100", pathVars.get("id"));
+        assertEquals("ord-50", pathVars.get("orderId"));
     }
 }

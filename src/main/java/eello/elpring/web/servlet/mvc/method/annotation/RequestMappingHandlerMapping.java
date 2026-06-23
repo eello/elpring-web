@@ -6,6 +6,7 @@ import eello.elpring.web.bind.annotation.PostMapping;
 import eello.elpring.web.bind.annotation.PutMapping;
 import eello.elpring.web.bind.annotation.RequestMapping;
 import eello.elpring.web.bind.annotation.RequestMethod;
+import eello.elpring.web.method.annotation.PathVariableMethodArgumentResolver;
 import eello.elpring.web.method.HandlerMethod;
 import eello.elpring.web.servlet.HandlerMapping;
 import eello.elpring.web.servlet.mvc.RequestKey;
@@ -17,10 +18,7 @@ import eello.elpring.web.servlet.HandlerExecutionChain;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /*
     Http Method와 URL을 기준으로 실행될 Handler를 찾아서 실행되어야할 Interceptor + Handler 를 묶은 HandlerExecutionChain을 반환
@@ -28,7 +26,8 @@ import java.util.Set;
 public class RequestMappingHandlerMapping implements HandlerMapping, ApplicationContextAware {
 
     private ApplicationContext ctx;
-    private Map<RequestKey, HandlerMethod> mappingRegistry = new HashMap<>();
+    private Map<RequestKey, HandlerMethod> staticHandlerRegistry = new HashMap<>();
+    private List<PatternRequestMapping> patternHandlerRegistry = new ArrayList<>();
 
     /*
         등록된 빈들 중 @Controller가 적용된 클래스를 찾고 그 중에서 @GetMapping, @PostMapping, @PutMapping, @DeleteMapping이 적용된
@@ -59,22 +58,31 @@ public class RequestMappingHandlerMapping implements HandlerMapping, Application
 
                 String[] combinePaths = combinePath(classUrl, methodPaths);
 
-                RequestKey[] requestKeys = new  RequestKey[combinePaths.length * requestMethods.length];
-                int requestKeyIndex = 0;
+                List<RequestKey> staticHandlers = new ArrayList<>(); // PathVariable이 포함되지 않은 URL
+                List<PatternRequestMapping> patternHandlers  = new ArrayList<>();
                 for (String combinePath : combinePaths) {
                     for (RequestMethod requestMethod : requestMethods) {
-                        requestKeys[requestKeyIndex++] = new RequestKey(combinePath, requestMethod);
+                        if (RouteUtils.hasPathVariable(combinePath)) {
+                            patternHandlers.add(PatternRequestMapping.of(requestMethod, combinePath));
+                        } else {
+                            staticHandlers.add(new RequestKey(combinePath, requestMethod));
+                        }
                     }
                 }
 
                 // RequestKey와 HandlerMethod 매핑
                 HandlerMethod handlerMethod = new HandlerMethod(method, beanName, bean, beanType);
-                for (RequestKey requestKey : requestKeys) {
-                    if (mappingRegistry.containsKey(requestKey)) {
+                for (RequestKey requestKey : staticHandlers) {
+                    if (staticHandlerRegistry.containsKey(requestKey)) {
                         throw new IllegalStateException("Duplicate request endpoint: " + requestKey);
                     }
 
-                    mappingRegistry.put(requestKey, handlerMethod);
+                    staticHandlerRegistry.put(requestKey, handlerMethod);
+                }
+
+                for (PatternRequestMapping patternHandler : patternHandlers) {
+                    patternHandler.setHandlerMethod(handlerMethod);
+                    patternHandlerRegistry.add(patternHandler);
                 }
             }
         }
@@ -118,12 +126,22 @@ public class RequestMappingHandlerMapping implements HandlerMapping, Application
         RequestMethod requestMethod = RequestMethod.resolve(request.getMethod());
 
         RequestKey requestKey = new RequestKey(requestPath, requestMethod);
-        HandlerMethod handlerMethod = mappingRegistry.get(requestKey);
+        HandlerMethod handlerMethod = staticHandlerRegistry.get(requestKey);
         if (handlerMethod == null) {
-            return null;
+            for (PatternRequestMapping patternRequestMapping : patternHandlerRegistry) {
+                if (patternRequestMapping.isMatch(requestPath, requestMethod)) {
+                    handlerMethod = patternRequestMapping.getHandlerMethod();
+
+                    Map<String, String> pathVarResultMap = patternRequestMapping.extractPathVariables(requestPath);
+                    request.setAttribute(
+                            PathVariableMethodArgumentResolver.PATH_VARIABLE_ATTRIBUTE_KEY,
+                            pathVarResultMap
+                    );
+                }
+            }
         }
 
-        return new HandlerExecutionChain(handlerMethod);
+        return handlerMethod != null ? new HandlerExecutionChain(handlerMethod) : null;
     }
 
     @Override

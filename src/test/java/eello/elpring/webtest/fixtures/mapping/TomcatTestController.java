@@ -3,6 +3,7 @@ package eello.elpring.webtest.fixtures.mapping;
 import eello.elpring.di.annotation.Component;
 import eello.elpring.web.bind.annotation.Controller;
 import eello.elpring.web.bind.annotation.GetMapping;
+import eello.elpring.web.bind.annotation.PathVariable;
 
 @Controller
 @Component
@@ -36,5 +37,11 @@ public class TomcatTestController {
     @GetMapping("/test-tomcat/dto")
     public TestDto testDto() {
         return new TestDto("elpring", 5);
+    }
+
+    @GetMapping("/test-tomcat/pathvariable/{id}/orders/{orderId}")
+    public String testPathVariable(@PathVariable("id") int id,
+                                   @PathVariable String orderId) {
+        return "id:" + id + ",orderId:" + orderId;
     }
 }

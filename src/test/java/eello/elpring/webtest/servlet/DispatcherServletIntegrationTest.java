@@ -277,4 +277,19 @@ public class DispatcherServletIntegrationTest {
         // WAS 수준에서 발생한 rethrow된 IllegalStateException은 500 에러를 유발해야 함.
         assertEquals(500, response.statusCode());
     }
+
+    @Test
+    void testEmbeddedTomcatPathVariableBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-tomcat/pathvariable/123/orders/ORD-999"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertEquals("\"id:123,orderId:ORD-999\"", response.body(), "Response body should match the path variable values");
+    }
 }
