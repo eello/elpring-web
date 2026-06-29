@@ -3,7 +3,7 @@ package eello.elpring.web.method.annotation;
 import eello.elpring.web.bind.annotation.ModelAttribute;
 import eello.elpring.web.bind.support.TypeConversionService;
 import eello.elpring.web.exception.MethodArgumentTypeMismatchException;
-import eello.elpring.web.inbox.ClassUtils;
+import eello.elpring.web.util.ClassUtils;
 import eello.elpring.web.method.MethodParameter;
 import eello.elpring.web.method.support.HandlerMethodArgumentResolver;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,9 +28,15 @@ public class ModelAttributeMethodArgumentResolver implements HandlerMethodArgume
 
     private final TypeConversionService typeConversionService;
     private final Map<Class<?>, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
+    private final boolean useDefaultResolution;
 
     public ModelAttributeMethodArgumentResolver(TypeConversionService typeConversionService) {
+        this(typeConversionService, false);
+    }
+
+    public ModelAttributeMethodArgumentResolver(TypeConversionService typeConversionService, boolean useDefaultResolution) {
         this.typeConversionService = typeConversionService;
+        this.useDefaultResolution = useDefaultResolution;
     }
 
     @Override
@@ -41,7 +47,7 @@ public class ModelAttributeMethodArgumentResolver implements HandlerMethodArgume
 
         // 최소한 인터페이스나 프리미티브 타입(int, long)은 거르고, 팩토리에서 new 할 수 있는 진짜 일반 클래스 객체일 때만 수락
         // 프리미티브 타입이나 String은 이미 이 전의 RequestParamMethodArgumentResolver에서 처리하기 때문
-        return !ClassUtils.isSimpleType(parameter.getParameterType());
+        return useDefaultResolution && !ClassUtils.isSimpleType(parameter.getParameterType());
     }
 
     @Override

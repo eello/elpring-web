@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 
 public class MethodParameter {
 
@@ -56,5 +57,9 @@ public class MethodParameter {
 
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
         return parameter.isAnnotationPresent(annotationClass);
+    }
+
+    public Type getGenericParameterType() {
+        return parameter.getParameterizedType();
     }
 }

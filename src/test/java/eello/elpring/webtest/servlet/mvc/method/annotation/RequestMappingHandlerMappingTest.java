@@ -59,8 +59,8 @@ public class RequestMappingHandlerMappingTest extends AbstractHandlerMappingTest
 
         assertNotNull(mappingRegistry, "mappingRegistry should not be null");
         
-        // Expected size: 3 (basic) + 8 (multi) + 3 (tomcat test controller endpoints) = 14
-        assertEquals(14, mappingRegistry.size(), "mappingRegistry should contain exactly 14 handlers");
+        // Expected size: 3 (basic) + 8 (multi) + 6 (tomcat test controller endpoints) = 17
+        assertEquals(17, mappingRegistry.size(), "mappingRegistry should contain exactly 17 handlers");
 
         // Verify basic controllers
         assertTrue(mappingRegistry.containsKey(new RequestKey("/hello", RequestMethod.GET)));
@@ -71,6 +71,9 @@ public class RequestMappingHandlerMappingTest extends AbstractHandlerMappingTest
         assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat", RequestMethod.GET)));
         assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat/primitive", RequestMethod.GET)));
         assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat/dto", RequestMethod.GET)));
+        assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat/requestbody", RequestMethod.POST)));
+        assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat/requestbody/list", RequestMethod.POST)));
+        assertTrue(mappingRegistry.containsKey(new RequestKey("/test-tomcat/servlet-api", RequestMethod.GET)));
 
         // Verify multi-mapping combinations (2 classPaths * 2 methodPaths * 2 methods = 8 combinations)
         assertTrue(mappingRegistry.containsKey(new RequestKey("/api/v1/users", RequestMethod.GET)));

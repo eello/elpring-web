@@ -20,6 +20,8 @@ src/main/java/eello/elpring/web/
 │   │   └── method/annotation/ # 어노테이션 기반 매핑/어댑터 구현체
 │   └── (Servlet Core)        # DispatcherServlet, HandlerMapping, HandlerAdapter 등
 ├── config/                   # 수동 빈 설정을 위한 @Configuration 컴포넌트
+├── http/                     # HTTP 관련 핵심 타입 및 유틸리티
+│   └── converter/            # HTTP 메시지 바디 변환기 인터페이스 및 구현체
 ├── exception/                # 웹 계층 공통 예외 클래스
 ├── util/                     # ObjectMapper 등 웹 유틸리티
 └── inbox/                    # 임시 작업용 Inbox 패키지
@@ -45,7 +47,7 @@ src/main/java/eello/elpring/web/
 * **`method.support`**: 아규먼트 리졸버 인터페이스 및 이들의 합성 구조를 위치시킵니다.
   * *예시*: `HandlerMethodArgumentResolver` (인터페이스), `HandlerMethodArgumentResolverComposite`
 * **`method.annotation`**: 특정 파라미터 타입이나 어노테이션을 해석해 객체를 채워주는 구체적인 리졸버 구현체들을 위치시킵니다.
-  * *예시*: `RequestParamMethodArgumentResolver`, `ServletRequestMethodArgumentResolver` 등
+  * *예시*: `RequestParamMethodArgumentResolver`, `ServletRequestMethodArgumentResolver`, `RequestBodyMethodArgumentResolver` 등
 
 ### 3. `servlet` (서블릿 MVC 프레임워크 엔진)
 톰캣 등 서블릿 컨테이너와 직접 연동되는 DispatcherServlet과 핵심 MVC 흐름 제어 컴포넌트들이 위치합니다.
@@ -60,12 +62,19 @@ src/main/java/eello/elpring/web/
 클래스 경로 스캔 방식 대신 명시적으로 수동 빈을 등록하기 위한 빈 설정 정보들이 위치합니다.
 * *예시*: `DispatcherServletConfig`, `HandlerMappingConfig`, `ArgumentResolverConfig`, `TypeConverterConfig`
 
-### 5. `exception` (예외)
+### 5. `http` (HTTP 관련 핵심 타입 및 컨버전)
+HTTP 요청/응답 메시지 바디의 직렬화/역직렬화 및 미디어 타입 등을 처리하는 구조가 위치합니다.
+* **`http`**: HTTP 명세 및 공통 타입들을 위치시킵니다.
+  * *예시*: `MediaType`
+* **`http.converter`**: HTTP 바디 내용을 특정 객체로 또는 그 반대로 변환하는 메시지 컨버터 인터페이스 및 구현체들을 위치시킵니다.
+  * *예시*: `HttpMessageConverter`, `GenericHttpMessageConverter`, `JacksonJsonHttpMessageConverter`, `StringHttpMessageConverter`
+
+### 6. `exception` (예외)
 웹 동작 도중 발생할 수 있는 에러 상황에 대한 공통/커스텀 예외 클래스들이 위치합니다.
 
-### 6. `util` (유틸리티)
+### 7. `util` (유틸리티)
 특정 도메인 논리에 종속되지 않는 공통 기술성 유틸리티 클래스들이 위치합니다.
-* *예시*: `ObjectMapperFactory`
+* *예시*: `ObjectMapperFactory`, `ClassUtils`
 
 ---
 

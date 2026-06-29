@@ -1,6 +1,6 @@
 package eello.elpring.web.method.annotation;
 import eello.elpring.web.bind.support.TypeConversionService;
-import eello.elpring.web.inbox.ClassUtils;
+import eello.elpring.web.util.ClassUtils;
 import eello.elpring.web.method.support.HandlerMethodArgumentResolver;
 
 import eello.elpring.di.util.GenericTypeResolver;
@@ -18,9 +18,15 @@ public class RequestParamMethodArgumentResolver implements HandlerMethodArgument
      */
 
     private final TypeConversionService typeConversionService;
+    private final boolean useDefaultResolution;
 
     public RequestParamMethodArgumentResolver(TypeConversionService typeConversionService) {
+        this(typeConversionService, false);
+    }
+
+    public RequestParamMethodArgumentResolver(TypeConversionService typeConversionService, boolean useDefaultResolution) {
         this.typeConversionService = typeConversionService;
+        this.useDefaultResolution = useDefaultResolution;
     }
 
     @Override
@@ -29,7 +35,7 @@ public class RequestParamMethodArgumentResolver implements HandlerMethodArgument
             return true;
         }
 
-        return ClassUtils.isSimpleType(parameter.getParameterType());
+        return useDefaultResolution && ClassUtils.isSimpleType(parameter.getParameterType());
     }
 
     @Override

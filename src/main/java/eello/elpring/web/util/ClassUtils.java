@@ -1,4 +1,4 @@
-package eello.elpring.web.inbox;
+package eello.elpring.web.util;
 
 public class ClassUtils {
 

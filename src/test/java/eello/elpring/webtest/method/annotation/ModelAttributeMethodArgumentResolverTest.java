@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ModelAttributeMethodArgumentResolverTest {
 
     private ModelAttributeMethodArgumentResolver resolver;
+    private ModelAttributeMethodArgumentResolver fallbackResolver;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +51,7 @@ class ModelAttributeMethodArgumentResolverTest {
 
         TypeConversionService conversionService = new TypeConversionService(managers);
         resolver = new ModelAttributeMethodArgumentResolver(conversionService);
+        fallbackResolver = new ModelAttributeMethodArgumentResolver(conversionService, true);
     }
 
     // --- 테스트용 DTO 및 인터페이스들 ---
@@ -112,24 +114,27 @@ class ModelAttributeMethodArgumentResolverTest {
         MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
 
         assertTrue(resolver.supportsParameter(parameter));
+        assertTrue(fallbackResolver.supportsParameter(parameter));
     }
 
     @Test
-    @DisplayName("어노테이션이 없으나 일반 클래스 타입인 파라미터는 supportsParameter가 true를 반환해야 한다.")
+    @DisplayName("어노테이션이 없으나 일반 클래스 타입인 파라미터는 supportsParameter가 fallbackResolver에서만 true를 반환해야 한다.")
     void supportsParameter_withoutAnnotation_generalClass() throws NoSuchMethodException {
         Method method = this.getClass().getMethod("methodWithDtoWithoutAnnotation", TestDto.class);
         MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
 
-        assertTrue(resolver.supportsParameter(parameter));
+        assertFalse(resolver.supportsParameter(parameter));
+        assertTrue(fallbackResolver.supportsParameter(parameter));
     }
 
     @Test
-    @DisplayName("어노테이션이 없고 인터페이스 타입인 파라미터는 supportsParameter가 true를 반환해야 한다.")
+    @DisplayName("어노테이션이 없고 인터페이스 타입인 파라미터는 supportsParameter가 fallbackResolver에서만 true를 반환해야 한다.")
     void supportsParameter_withoutAnnotation_interface() throws NoSuchMethodException {
         Method method = this.getClass().getMethod("methodWithInterfaceWithoutAnnotation", TestInterfaceDto.class);
         MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
 
-        assertTrue(resolver.supportsParameter(parameter));
+        assertFalse(resolver.supportsParameter(parameter));
+        assertTrue(fallbackResolver.supportsParameter(parameter));
     }
 
     @Test

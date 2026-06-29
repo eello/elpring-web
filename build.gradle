@@ -16,7 +16,7 @@ tasks.withType(JavaCompile).configureEach {
 
 dependencies {
 //    implementation 'com.github.eello:elpring-di:main-SNAPSHOT'
-    implementation 'com.github.eello:elpring-di:v1.3.0'
+    implementation 'com.github.eello:elpring-di:v1.3.1'
 
     // Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind
     implementation 'tools.jackson.core:jackson-databind:3.1.3'

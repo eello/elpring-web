@@ -17,8 +17,10 @@ public class FakeHttpServletRequest {
     public static class Builder {
         private String method = "GET";
         private String uri = "/";
+        private String body = "";
         private final Map<String, String[]> parameters = new HashMap<>();
         private final Map<String, Object> attributes = new HashMap<>();
+        private final Map<String, String> headers = new HashMap<>();
 
         public Builder method(String method) {
             this.method = method;
@@ -30,6 +32,11 @@ public class FakeHttpServletRequest {
             return this;
         }
 
+        public Builder body(String body) {
+            this.body = body;
+            return this;
+        }
+
         public Builder addParameter(String name, String... values) {
             this.parameters.put(name, values);
             return this;
@@ -37,6 +44,11 @@ public class FakeHttpServletRequest {
 
         public Builder addAttribute(String name, Object value) {
             this.attributes.put(name, value);
+            return this;
+        }
+
+        public Builder addHeader(String name, String value) {
+            this.headers.put(name, value);
             return this;
         }
 
@@ -60,6 +72,12 @@ public class FakeHttpServletRequest {
                         }
                         if (proxyMethod.getName().equals("getAttribute") && args != null && args.length == 1) {
                             return attributes.get((String) args[0]);
+                        }
+                        if (proxyMethod.getName().equals("getHeader") && args != null && args.length == 1) {
+                            return headers.get((String) args[0]);
+                        }
+                        if (proxyMethod.getName().equals("getReader")) {
+                            return new java.io.BufferedReader(new java.io.StringReader(body));
                         }
                         return null;
                     }

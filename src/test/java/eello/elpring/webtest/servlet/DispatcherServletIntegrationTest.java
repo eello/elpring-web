@@ -292,4 +292,56 @@ public class DispatcherServletIntegrationTest {
         assertEquals(200, response.statusCode());
         assertEquals("\"id:123,orderId:ORD-999\"", response.body(), "Response body should match the path variable values");
     }
+
+    @Test
+    void testEmbeddedTomcatRequestBodyBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        String jsonPayload = "{\"name\":\"jason\",\"age\":29}";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-tomcat/requestbody"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertEquals("{\"name\":\"jason\",\"age\":29}", response.body(), "Response body should match the sent JSON DTO");
+    }
+
+    @Test
+    void testEmbeddedTomcatRequestBodyListBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        String jsonPayload = "[{\"name\":\"jason\",\"age\":29},{\"name\":\"amy\",\"age\":22}]";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-tomcat/requestbody/list"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertEquals("[{\"name\":\"jason\",\"age\":29},{\"name\":\"amy\",\"age\":22}]", response.body(), "Response body should match the sent JSON List");
+    }
+
+    @Test
+    void testEmbeddedTomcatServletApiBinding() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/test-tomcat/servlet-api"))
+                .header("X-Custom-Request", "Elpring-Hello")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.headers().firstValue("X-Custom-Response").isPresent(), "Response should have X-Custom-Response header");
+        assertEquals("Elpring-Hello-Received", response.headers().firstValue("X-Custom-Response").get(), "Response header value should match expected");
+        assertEquals("\"success\"", response.body(), "Response body should match the returned string serialized as JSON");
+    }
 }
