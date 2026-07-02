@@ -8,3 +8,9 @@ dependencyResolutionManagement {
     }
 }
 
+// 테스트를 위한 로컬 라이브러리 우선 사용
+includeBuild('../elpring-di') {
+    dependencySubstitution {
+        substitute module('com.github.eello:elpring-di') using project(':')
+    }
+}
