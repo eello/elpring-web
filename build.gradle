@@ -29,6 +29,8 @@ tasks.withType(JavaCompile).configureEach {
 dependencies {
 //    implementation 'com.github.eello:elpring-di:main-SNAPSHOT'
     api 'com.github.eello:elpring-di:v1.4.0'
+    api 'org.slf4j:slf4j-api:2.0.9'
+    testImplementation 'org.slf4j:slf4j-simple:2.0.9'
 
     // Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind
     implementation 'tools.jackson.core:jackson-databind:3.1.3'

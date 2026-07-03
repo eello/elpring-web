@@ -16,7 +16,12 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DispatcherServlet extends HttpServlet implements ApplicationContextAware {
+
+    private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
 
     private final HandlerMapping handlerMapping; // RequestMappingHandlerMapping
     private final HandlerAdapter handlerAdapter; // RequestMappingHandlerAdapter
@@ -41,16 +46,26 @@ public class DispatcherServlet extends HttpServlet implements ApplicationContext
 
     private void doDispatch(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("Dispatching request for [{}] {}", req.getMethod(), req.getRequestURI());
+            }
+
             HandlerExecutionChain mappedHandler = handlerMapping.getHandler(req);
             if (mappedHandler == null) {
+                log.warn("No handler found for [{}] {}", req.getMethod(), req.getRequestURI());
                 res.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("Mapped to handler: {}", mappedHandler.getHandler());
             }
 
             String result = handlerAdapter.handle(req, res, mappedHandler.getHandler());
             res.setContentType("application/json");
             res.getWriter().write(result);
         } catch (Exception e) {
+            log.error("Failed to dispatch request [{}] {}", req.getMethod(), req.getRequestURI(), e);
             throw new RuntimeException(e);
         }
     }

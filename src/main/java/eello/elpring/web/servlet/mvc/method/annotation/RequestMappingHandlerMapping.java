@@ -20,10 +20,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
     Http Method와 URL을 기준으로 실행될 Handler를 찾아서 실행되어야할 Interceptor + Handler 를 묶은 HandlerExecutionChain을 반환
  */
 public class RequestMappingHandlerMapping implements HandlerMapping, ApplicationContextAware {
+
+    private static final Logger log = LoggerFactory.getLogger(RequestMappingHandlerMapping.class);
 
     private ApplicationContext ctx;
     private Map<RequestKey, HandlerMethod> staticHandlerRegistry = new HashMap<>();
@@ -77,11 +82,18 @@ public class RequestMappingHandlerMapping implements HandlerMapping, Application
                         throw new IllegalStateException("Duplicate request endpoint: " + requestKey);
                     }
 
+                    if (log.isTraceEnabled()) {
+                        log.trace("Mapped endpoint [{}] onto {}", requestKey, handlerMethod.getMethod().getName());
+                    }
                     staticHandlerRegistry.put(requestKey, handlerMethod);
                 }
 
                 for (PatternRequestMapping patternHandler : patternHandlers) {
                     patternHandler.setHandlerMethod(handlerMethod);
+                    
+                    if (log.isTraceEnabled()) {
+                        log.trace("Mapped pattern endpoint [{}] onto {}", patternHandler.getPattern().pattern(), handlerMethod.getMethod().getName());
+                    }
                     patternHandlerRegistry.add(patternHandler);
                 }
             }

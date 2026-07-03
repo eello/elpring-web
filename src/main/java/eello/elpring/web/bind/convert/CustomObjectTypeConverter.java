@@ -5,9 +5,15 @@ import eello.elpring.web.exception.MethodArgumentTypeMismatchException;
 import java.lang.reflect.*;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CustomObjectTypeConverter extends ScalarTypeConverter {
+
+    private static final Logger log = LoggerFactory.getLogger(CustomObjectTypeConverter.class);
 
     private final Map<Class<?>, Executable> instanceFactory = new HashMap<>();
 
@@ -37,7 +43,7 @@ public class CustomObjectTypeConverter extends ScalarTypeConverter {
         try {
             instance = instantiate(instanceFactory, rawValue);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to convert '{}' to targetType '{}'", rawValue, targetType.getName(), e);
         }
 
         return instance;
