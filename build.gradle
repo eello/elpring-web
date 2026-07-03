@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.github.eello'
-version = 'v1.0.4'
+version = 'v1.1.0'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21 // 사용 중인 자바 버전
@@ -28,7 +28,7 @@ tasks.withType(JavaCompile).configureEach {
 
 dependencies {
 //    implementation 'com.github.eello:elpring-di:main-SNAPSHOT'
-    api 'com.github.eello:elpring-di:v1.4.0'
+    api 'com.github.eello:elpring-di:v1.5.0'
     api 'org.slf4j:slf4j-api:2.0.9'
     testImplementation 'org.slf4j:slf4j-simple:2.0.9'
 
