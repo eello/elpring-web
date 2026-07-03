@@ -1,8 +1,10 @@
+[![](https://jitpack.io/v/eello/elpring-web.svg)](https://jitpack.io/#eello/elpring-web)
+
 # elpring-web (경량 Web MVC 프레임워크)
 
 `elpring-web`은 Spring MVC의 핵심 기술인 **DispatcherServlet**과 **Argument Resolver**의 요청 라우팅 및 데이터 파싱 동작 원리를 깊이 있게 학습하고 이해하기 위해 순수 Java 및 내장 톰캣(Tomcat) 환경을 기반으로 구현한 경량 Web MVC 프레임워크 라이브러리입니다.
 
-본 프로젝트는 의존성 주입(DI) 컨테이너인 **[elpring-di](https://github.com/eello/elpring-di)**와 유기적으로 연동하여 동작하며, 컴포넌트 스캔 및 어노테이션 기반 MVC 패턴을 완벽히 지원합니다.
+본 프로젝트는 의존성 주입(DI) 컨테이너인 **[elpring-di](file:///Users/jongseong/01.%20Projects/elpring-framework/elpring-di)**와 유기적으로 연동하여 동작하며, 컴포넌트 스캔 및 어노테이션 기반 MVC 패턴을 완벽히 지원합니다.
 
 ---
 
@@ -10,7 +12,7 @@
 
 - **Core**: Java 21 (JDK 21)
 - **Servlet Container (WAS)**: Embedded Tomcat 10.1 (Jakarta Servlet API 6.x)
-- **JSON Serialization**: Jackson Databind 2.18
+- **JSON Serialization**: Jackson Databind 3.1
 - **DI 연동**: `elpring-di` (자체 DI 프레임워크 라이브러리)
 - **빌드 도구**: Gradle
 - **테스트 프레임워크**: JUnit 5
@@ -23,7 +25,7 @@
    - 모든 HTTP 요청을 단일 진입점인 `DispatcherServlet`에서 일괄 수신하여 적절한 컨트롤러 핸들러로 중개 및 배포합니다.
 2. **어노테이션 기반 URL 매핑 & 라우팅**:
    - `@Controller`, `@RequestMapping`, `@GetMapping`, `@PostMapping` 등 어노테이션을 스캔 및 매핑합니다.
-   - URI 템플릿 패턴 매치 엔진을 탑재하여 `/api/users/{id}`와 같은 동적 세그먼트 매핑 및 정규식 바인딩을 지원합니다.
+   - URI 템플릿 패턴 매치 엔진을 탑재하여 `/api/todos/{id}`와 같은 동적 세그먼트 매핑 및 정규식 바인딩을 지원합니다.
 3. **아규먼트 리졸버 아키텍처 (Argument Resolvers)**:
    - 컨트롤러 핸들러 메서드의 파라미터 타입을 실행 시점에 동적으로 분석하여 필요한 인스턴스를 자동으로 주입합니다.
    - **`@RequestParam`**: 쿼리 파라미터 바인딩 (원시타입 변환, List/Array 맵핑, 어노테이션 생략 시 Fallback 처리 지원).
@@ -128,6 +130,38 @@ src/main/java/
 
 ---
 
+## 🚀 시작하기 (Getting Started)
+
+### 1. 의존성 추가 (build.gradle)
+JitPack을 활용하여 `build.gradle`에 의존성을 추가합니다.  
+*(통합 `elpring-framework` 모노레포 내에서 로컬 개발을 진행할 때는 외부 라이브러리 추가 대신 `project(':elpring-web')`로 직접 프로젝트를 참조할 수 있습니다.)*
+
+```groovy
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.eello:elpring-web:v1.0.3'
+}
+```
+
+### 2. ⚠️ 필수 컴파일 옵션 설정 (매우 중요)
+`elpring-web`은 컨트롤러 메서드의 파라미터 이름을 기반으로 `@RequestParam`, `@PathVariable` 등의 바인딩 값을 추출합니다. 따라서 자바 컴파일 시 **파라미터 이름을 바이트코드에 남기는 옵션(`-parameters`)**을 반드시 활성화해야 합니다.
+
+`build.gradle` 하단에 아래 설정을 추가해 주세요:
+
+```groovy
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << "-parameters"
+}
+```
+
+> **참고**: IDE(IntelliJ 등)에서 애플리케이션을 직접 실행할 경우, `Settings > Build, Execution, Deployment > Compiler > Java Compiler` 메뉴로 이동하여 **Additional command line parameters** 항목에 `-parameters`를 반드시 추가해야 합니다.
+
+---
+
 ## 💻 사용 예제
 
 ### 1. 컨트롤러 등록
@@ -227,8 +261,6 @@ public class WebApplicationBootstrap {
 ---
 
 ## 🚫 제약 사항 및 예외 규약
-
-안정적이고 순수한 경량 기동을 위해 다음과 같은 명확한 프레임워크 한계점 및 규약을 가집니다.
 
 1. **컨텍스트 패스 및 서블릿 매핑 제약**
    - 경로 매칭 방식이 `request.getRequestURI()`를 기준으로 작동하므로, WAS(톰캣 등) 구동 시 **Context Path는 무조건 루트(`""`)여야 하며, DispatcherServlet의 매핑 규칙 또한 `/*`로 지정되어야** 정상적인 컨트롤러 매핑이 동작합니다.
