@@ -8,9 +8,11 @@ dependencyResolutionManagement {
     }
 }
 
-// 테스트를 위한 로컬 라이브러리 우선 사용
-includeBuild('../elpring-di') {
-    dependencySubstitution {
-        substitute module('com.github.eello:elpring-di') using project(':')
+// 로컬 환경에 elpring-di가 존재하는 경우에만 includeBuild 적용 (JitPack 단독 빌드 에러 방지)
+if (file('../elpring-di').exists()) {
+    includeBuild('../elpring-di') {
+        dependencySubstitution {
+            substitute module('com.github.eello:elpring-di') using project(':')
+        }
     }
 }

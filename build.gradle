@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.github.eello'
-version = 'v1.1.0'
+version = 'v1.1.1'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21 // 사용 중인 자바 버전
