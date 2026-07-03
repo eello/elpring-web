@@ -1,5 +1,7 @@
 package eello.elpring.web.method.annotation;
+
 import eello.elpring.web.bind.support.TypeConversionService;
+import eello.elpring.web.exception.MissingServletRequestParameterException;
 import eello.elpring.web.util.ClassUtils;
 import eello.elpring.web.method.support.HandlerMethodArgumentResolver;
 
@@ -24,7 +26,8 @@ public class RequestParamMethodArgumentResolver implements HandlerMethodArgument
         this(typeConversionService, false);
     }
 
-    public RequestParamMethodArgumentResolver(TypeConversionService typeConversionService, boolean useDefaultResolution) {
+    public RequestParamMethodArgumentResolver(TypeConversionService typeConversionService,
+                                              boolean useDefaultResolution) {
         this.typeConversionService = typeConversionService;
         this.useDefaultResolution = useDefaultResolution;
     }
@@ -44,6 +47,27 @@ public class RequestParamMethodArgumentResolver implements HandlerMethodArgument
         String paramName = resolveAnnotatedParameterName(methodParameter, RequestParam.class, RequestParam::value);
         String[] rawValues = request.getParameterValues(paramName);
         Class<?> paramType = methodParameter.getParameterType();
+        RequestParam requestParam = methodParameter.getAnnotation(RequestParam.class);
+
+        /*
+            ########################################################################
+            @RequestParam.required = false 일 때
+            - rawValues == null 일때 (paramName에 해당하는 쿼리 파라미터가 입력으로 주어지지 않았을 때)
+            - return required ? throw IllegalStateException : null
+            ########################################################################
+        */
+        if (rawValues == null || rawValues.length == 0) {
+            boolean required = (requestParam != null) ? requestParam.required() : false;
+            if (required) {
+                throw new MissingServletRequestParameterException(paramName);
+            }
+
+            if (paramType.isPrimitive()) {
+                throw new IllegalStateException("Optional " + paramType.getSimpleName() + " parameter '" + paramName + "' is present but cannot be translated into a null value due to being declared as a primitive type.");
+            }
+
+            return null;
+        }
 
         // 만약 List, Set과 같은 Collection이 아닌 다른 제네릭 타입을 지원할 것이라면 수정 필요
         Class<?> componentType = null;

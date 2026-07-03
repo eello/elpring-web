@@ -11,6 +11,7 @@ import eello.elpring.web.bind.convert.TypeConverter;
 import eello.elpring.web.bind.convert.TypeConverterManager;
 import eello.elpring.web.bind.support.TypeConversionService;
 import eello.elpring.web.method.annotation.RequestParamMethodArgumentResolver;
+import eello.elpring.web.exception.MissingServletRequestParameterException;
 
 import eello.elpring.web.bind.annotation.RequestParam;
 import eello.elpring.web.method.MethodParameter;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RequestParamMethodArgumentResolverTest {
 
     private RequestParamMethodArgumentResolver resolver;
+    private TypeConversionService conversionService;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +49,7 @@ class RequestParamMethodArgumentResolverTest {
         managers.add(scalarManager);
         managers.add(collectionManager);
         
-        TypeConversionService conversionService = new TypeConversionService(managers);
+        conversionService = new TypeConversionService(managers);
         resolver = new RequestParamMethodArgumentResolver(conversionService);
     }
 
@@ -61,6 +63,21 @@ class RequestParamMethodArgumentResolverTest {
 
     public void sampleMethodSet(@RequestParam("codes") Set<Integer> codes) {
         // 테스트용
+    }
+
+    public void sampleRequiredTrue(@RequestParam("age") int age) {
+    }
+
+    public void sampleRequiredFalse(@RequestParam(value = "age", required = false) Integer age) {
+    }
+
+    public void sampleRequiredFalsePrimitive(@RequestParam(value = "age", required = false) int age) {
+    }
+
+    public void sampleNoAnnotation(Integer age) {
+    }
+
+    public void sampleNoAnnotationPrimitive(int age) {
     }
 
     @Test
@@ -129,5 +146,87 @@ class RequestParamMethodArgumentResolverTest {
         assertTrue(set.contains(10));
         assertTrue(set.contains(20));
         assertTrue(set.contains(30));
+    }
+
+    @Test
+    @DisplayName("required = true일 때 파라미터가 없으면 MissingServletRequestParameterException이 발생해야 한다.")
+    void resolveArgument_throwsException_when_requiredParamIsMissing() throws NoSuchMethodException {
+        Method method = this.getClass().getMethod("sampleRequiredTrue", int.class);
+        MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
+
+        HttpServletRequest request = FakeHttpServletRequest.builder()
+                .method("GET")
+                .uri("/")
+                .build();
+
+        assertThrows(MissingServletRequestParameterException.class, () ->
+                resolver.resolveArgument(parameter, request, null)
+        );
+    }
+
+    @Test
+    @DisplayName("required = false일 때 파라미터가 없으면 null을 리턴해야 한다.")
+    void resolveArgument_returnsNull_when_optionalParamIsMissing() throws NoSuchMethodException {
+        Method method = this.getClass().getMethod("sampleRequiredFalse", Integer.class);
+        MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
+
+        HttpServletRequest request = FakeHttpServletRequest.builder()
+                .method("GET")
+                .uri("/")
+                .build();
+
+        Object result = resolver.resolveArgument(parameter, request, null);
+
+        assertNull(result);
+    }
+
+    @Test
+    @DisplayName("required = false이고 프리미티브 타입일 때 파라미터가 없으면 IllegalStateException이 발생해야 한다.")
+    void resolveArgument_throwsException_when_optionalPrimitiveParamIsMissing() throws NoSuchMethodException {
+        Method method = this.getClass().getMethod("sampleRequiredFalsePrimitive", int.class);
+        MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
+
+        HttpServletRequest request = FakeHttpServletRequest.builder()
+                .method("GET")
+                .uri("/")
+                .build();
+
+        assertThrows(IllegalStateException.class, () ->
+                resolver.resolveArgument(parameter, request, null)
+        );
+    }
+
+    @Test
+    @DisplayName("어노테이션이 없고 required가 아닐 때 파라미터가 없으면 null을 리턴해야 한다.")
+    void resolveArgument_returnsNull_when_noAnnotationParamIsMissing() throws NoSuchMethodException {
+        RequestParamMethodArgumentResolver defaultResolver = new RequestParamMethodArgumentResolver(conversionService, true);
+        Method method = this.getClass().getMethod("sampleNoAnnotation", Integer.class);
+        MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
+
+        HttpServletRequest request = FakeHttpServletRequest.builder()
+                .method("GET")
+                .uri("/")
+                .build();
+
+        Object result = defaultResolver.resolveArgument(parameter, request, null);
+
+        assertNull(result);
+    }
+
+    @Test
+    @DisplayName("어노테이션이 없고 프리미티브 타입일 때 파라미터가 없으면 IllegalStateException이 발생해야 한다.")
+    void resolveArgument_throwsException_when_noAnnotationPrimitiveParamIsMissing() throws NoSuchMethodException {
+        RequestParamMethodArgumentResolver defaultResolver = new RequestParamMethodArgumentResolver(conversionService, true);
+        Method method = this.getClass().getMethod("sampleNoAnnotationPrimitive", int.class);
+        MethodParameter parameter = MethodParameter.of(method, method.getParameters()[0], 0);
+
+        HttpServletRequest request = FakeHttpServletRequest.builder()
+                .method("GET")
+                .uri("/")
+                .build();
+
+        assertThrows(IllegalStateException.class, () ->
+                defaultResolver.resolveArgument(parameter, request, null)
+        );
     }
 }
